@@ -32,7 +32,14 @@ export default function MeetingSubmissionForm() {
     setSuccess(false)
 
     try {
-      await apiClient.createMeeting(formData)
+      // Convert datetime-local to ISO format
+      const isoDate = new Date(formData.occurredAt).toISOString()
+      
+      await apiClient.createMeeting({
+        ...formData,
+        occurredAt: isoDate,
+      })
+      
       setSuccess(true)
       setFormData({
         meetingId: '',
