@@ -45,6 +45,9 @@ class LLMClient:
         
         for attempt in range(max_retries):
             try:
+                print(f"Attempting LLM call (attempt {attempt + 1}/{max_retries})...")
+                print(f"Provider: {self.provider}, Model: {self.model}")
+                
                 # Call LLM API
                 response = self.client.chat.completions.create(
                     model=self.model,
@@ -58,6 +61,7 @@ class LLMClient:
                 
                 # Extract response content
                 content = response.choices[0].message.content
+                print(f"LLM response received successfully")
                 
                 # Parse JSON
                 data = json.loads(content)
@@ -65,22 +69,27 @@ class LLMClient:
                 # Validate against schema
                 signals = AnalysisSignals(**data)
                 
+                print(f"✓ LLM analysis completed successfully")
                 return signals
                 
             except (json.JSONDecodeError, ValidationError) as e:
+                print(f"Validation error on attempt {attempt + 1}: {str(e)[:100]}")
                 if attempt < max_retries - 1:
                     # Exponential backoff
                     time.sleep(2 ** attempt)
                     continue
                 else:
+                    print(f"All retries exhausted, falling back to demo mode")
                     # Fallback to demo mode
                     return self._generate_demo_analysis(transcript)
             
             except Exception as e:
+                print(f"LLM API error on attempt {attempt + 1}: {str(e)[:200]}")
                 if attempt < max_retries - 1:
                     time.sleep(2 ** attempt)
                     continue
                 else:
+                    print(f"All retries exhausted, falling back to demo mode")
                     # Fallback to demo mode
                     return self._generate_demo_analysis(transcript)
     
@@ -90,8 +99,8 @@ class LLMClient:
         transcript_lower = transcript.lower()
         
         # Determine sentiment
-        positive_words = ['great', 'excellent', 'interested', 'excited', 'good', 'perfect']
-        negative_words = ['concern', 'worried', 'problem', 'issue', 'difficult', 'expensive']
+        positive_words = ['great', 'excellent', 'interested', 'excited', 'good', 'perfect', 'happy', 'love', 'amazing', 'wonderful', 'fantastic', 'positive', 'agree', 'yes', 'definitely', 'absolutely']
+        negative_words = ['concern', 'worried', 'problem', 'issue', 'difficult', 'expensive', 'no', 'not', 'cannot', 'won\'t', 'disappointed', 'frustrated', 'angry', 'bad', 'poor']
         
         positive_count = sum(1 for word in positive_words if word in transcript_lower)
         negative_count = sum(1 for word in negative_words if word in transcript_lower)
@@ -103,35 +112,86 @@ class LLMClient:
         else:
             sentiment = 'neutral'
         
-        # Extract topics (simple word frequency)
+        # Extract topics (improved - filter out names and common words)
         words = transcript_lower.split()
-        common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'is', 'was', 'are', 'were', 'been', 'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'them', 'their', 'our', 'your'}
+        # Common words to exclude
+        common_words = {
+            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 
+            'is', 'was', 'are', 'were', 'been', 'be', 'have', 'has', 'had', 'do', 'does', 'did', 
+            'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 
+            'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'them', 'their', 'our', 'your',
+            'said', 'says', 'about', 'into', 'through', 'during', 'before', 'after', 'above',
+            'below', 'from', 'up', 'down', 'out', 'off', 'over', 'under', 'again', 'further',
+            'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'both',
+            'each', 'few', 'more', 'most', 'other', 'some', 'such', 'only', 'own', 'same',
+            'so', 'than', 'too', 'very', 'just', 'now'
+        }
+        
+        # Filter out names (words ending with :) and common words
         word_freq = {}
         for word in words:
-            if len(word) > 4 and word not in common_words:
-                word_freq[word] = word_freq.get(word, 0) + 1
+            # Skip names (like "sarah:", "john:")
+            if word.endswith(':'):
+                continue
+            # Clean punctuation
+            clean_word = word.strip('.,!?;:"\'')
+            if len(clean_word) > 3 and clean_word not in common_words:
+                word_freq[clean_word] = word_freq.get(clean_word, 0) + 1
         
+        # Get top topics
         topics = sorted(word_freq.keys(), key=lambda x: word_freq[x], reverse=True)[:5]
         if not topics:
             topics = ['general discussion']
         
+        # Extract objections (look for concern/problem patterns)
+        objections = []
+        sentences = transcript.split('.')
+        for sentence in sentences:
+            sentence_lower = sentence.lower()
+            if any(word in sentence_lower for word in ['concern', 'worried', 'problem', 'issue', 'but', 'however']):
+                clean_sentence = sentence.strip()
+                if clean_sentence and len(clean_sentence) > 10:
+                    objections.append(clean_sentence[:100])
+        
+        if not objections:
+            objections = ['No major objections identified']
+        
+        # Extract commitments (look for action/commitment patterns)
+        commitments = []
+        for sentence in sentences:
+            sentence_lower = sentence.lower()
+            if any(word in sentence_lower for word in ['will', 'commit', 'promise', 'agree', 'next step', 'follow up', 'schedule']):
+                clean_sentence = sentence.strip()
+                if clean_sentence and len(clean_sentence) > 10:
+                    commitments.append(clean_sentence[:100])
+        
+        if not commitments:
+            commitments = ['No specific commitments identified']
+        
         # Determine outcome
-        if 'closed' in transcript_lower or 'deal' in transcript_lower:
+        if 'closed' in transcript_lower or 'deal' in transcript_lower or 'signed' in transcript_lower:
             outcome = 'closed'
-        elif 'follow' in transcript_lower or 'next' in transcript_lower:
+        elif 'follow' in transcript_lower or 'next' in transcript_lower or 'schedule' in transcript_lower:
             outcome = 'follow_up'
-        elif 'not interested' in transcript_lower or 'no interest' in transcript_lower:
+        elif 'not interested' in transcript_lower or 'no interest' in transcript_lower or 'pass' in transcript_lower:
             outcome = 'no_interest'
         else:
             outcome = 'unknown'
         
+        # Generate summary
+        summary = f"Meeting analysis: {sentiment.capitalize()} sentiment detected. "
+        summary += f"Key topics discussed include {', '.join(topics[:3])}. "
+        if outcome != 'unknown':
+            summary += f"Outcome: {outcome.replace('_', ' ')}. "
+        summary += "(Note: Generated using fallback analysis - LLM API unavailable)"
+        
         return AnalysisSignals(
             sentiment=sentiment,
             topics=topics,
-            objections=['Demo mode - LLM unavailable'],
-            commitments=['Demo mode - LLM unavailable'],
+            objections=objections[:5],  # Limit to 5
+            commitments=commitments[:5],  # Limit to 5
             outcome=outcome,
-            summary=f"Demo analysis: This is a {sentiment} meeting discussing {', '.join(topics[:3])}. (Note: LLM API unavailable, using fallback analysis)"
+            summary=summary
         )
     
     def _build_prompt(self, transcript: str) -> str:
