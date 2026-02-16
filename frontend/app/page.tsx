@@ -1,128 +1,289 @@
-import { Brain, Plus, Users, Sparkles, Shield, TrendingUp } from 'lucide-react'
+'use client'
+
+import Box from '@mui/material/Box'
+import Container from '@mui/material/Container'
+import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Grid from '@mui/material/Grid'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Chip from '@mui/material/Chip'
 import Link from 'next/link'
+import PsychologyIcon from '@mui/icons-material/Psychology'
+import AddIcon from '@mui/icons-material/Add'
+import PeopleIcon from '@mui/icons-material/People'
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
+import ShieldIcon from '@mui/icons-material/Shield'
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'
+import { alpha } from '@mui/material/styles'
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
+    <Box>
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary-50 via-white to-primary-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="inline-flex items-center space-x-2 bg-primary-100 text-primary-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <Sparkles className="w-4 h-4" />
-              <span>AI-Powered Meeting Intelligence</span>
-            </div>
+      <Box
+        sx={{
+          background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%)',
+          py: { xs: 8, md: 12 },
+        }}
+      >
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Chip
+              icon={<AutoAwesomeIcon />}
+              label="AI-Powered Meeting Intelligence"
+              color="primary"
+              sx={{ mb: 3, fontWeight: 500 }}
+            />
             
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              One Source of Truth for
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-700">
-                {' '}Meeting Intelligence
-              </span>
-            </h1>
+            <Typography
+              variant="h1"
+              sx={{
+                fontSize: { xs: '2.5rem', md: '3.5rem' },
+                fontWeight: 700,
+                mb: 3,
+                background: 'linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              One Source of Truth for Meeting Intelligence
+            </Typography>
             
-            <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
+            <Typography
+              variant="h5"
+              color="text.secondary"
+              sx={{ mb: 5, maxWidth: '800px', mx: 'auto', fontWeight: 400 }}
+            >
               Contact-centric meeting analysis with AI-powered insights. 
               Immutable records, derived intelligence, and verified outcomes.
-            </p>
+            </Typography>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Button
+                component={Link}
                 href="/meetings/new"
-                className="inline-flex items-center justify-center space-x-2 px-8 py-4 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition shadow-lg hover:shadow-xl"
+                variant="contained"
+                size="large"
+                startIcon={<AddIcon />}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #0284c7 0%, #075985 100%)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: 4,
+                  },
+                  transition: 'all 0.3s',
+                }}
               >
-                <Plus className="w-5 h-5" />
-                <span className="font-medium">Submit Meeting</span>
-              </Link>
+                Submit Meeting
+              </Button>
               
-              <Link
+              <Button
+                component={Link}
                 href="/contacts"
-                className="inline-flex items-center justify-center space-x-2 px-8 py-4 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition border border-gray-200"
+                variant="outlined"
+                size="large"
+                startIcon={<PeopleIcon />}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: 2,
+                  },
+                  transition: 'all 0.3s',
+                }}
               >
-                <Users className="w-5 h-5" />
-                <span className="font-medium">View Contacts</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-      
+                View Contacts
+              </Button>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
+
       {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Built for Truth-Driven Organizations
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Ingest real operational activity, convert it into verified metrics, 
-              and power AI agents with immutable records.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="bg-gradient-to-br from-primary-50 to-white p-8 rounded-2xl border border-primary-100">
-              <div className="bg-primary-500 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Immutable Records
-              </h3>
-              <p className="text-gray-600">
-                Meeting transcripts stored as immutable truth. No retroactive manipulation. 
-                Complete audit trail for compliance.
-              </p>
-            </div>
-            
-            {/* Feature 2 */}
-            <div className="bg-gradient-to-br from-primary-50 to-white p-8 rounded-2xl border border-primary-100">
-              <div className="bg-primary-500 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
-                <Brain className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Bounded AI Analysis
-              </h3>
-              <p className="text-gray-600">
-                LLM agents constrained by rules and structured outputs. 
-                Extract topics, sentiment, and outcomes without hallucinations.
-              </p>
-            </div>
-            
-            {/* Feature 3 */}
-            <div className="bg-gradient-to-br from-primary-50 to-white p-8 rounded-2xl border border-primary-100">
-              <div className="bg-primary-500 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Contact-Centric Intelligence
-              </h3>
-              <p className="text-gray-600">
-                All data organized by contact. View complete interaction history, 
-                analysis results, and verified outcomes in one place.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-      
+      <Container maxWidth="lg" sx={{ py: { xs: 8, md: 12 } }}>
+        <Box sx={{ textAlign: 'center', mb: 8 }}>
+          <Typography variant="h2" sx={{ fontSize: { xs: '2rem', md: '2.5rem' }, fontWeight: 700, mb: 2 }}>
+            Built for Truth-Driven Organizations
+          </Typography>
+          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '700px', mx: 'auto' }}>
+            Ingest real operational activity, convert it into verified metrics, 
+            and power AI agents with immutable records.
+          </Typography>
+        </Box>
+
+        <Grid container spacing={4}>
+          {/* Feature 1 */}
+          <Grid item xs={12} md={4}>
+            <Card
+              sx={{
+                height: '100%',
+                background: `linear-gradient(135deg, ${alpha('#0ea5e9', 0.05)} 0%, ${alpha('#ffffff', 1)} 100%)`,
+                border: 1,
+                borderColor: alpha('#0ea5e9', 0.2),
+                transition: 'all 0.3s',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: 6,
+                },
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box
+                  sx={{
+                    background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                    borderRadius: 2,
+                    p: 1.5,
+                    display: 'inline-flex',
+                    mb: 3,
+                  }}
+                >
+                  <ShieldIcon sx={{ color: 'white', fontSize: 32 }} />
+                </Box>
+                <Typography variant="h5" fontWeight={600} gutterBottom>
+                  Immutable Records
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Meeting transcripts stored as immutable truth. No retroactive manipulation. 
+                  Complete audit trail for compliance.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Feature 2 */}
+          <Grid item xs={12} md={4}>
+            <Card
+              sx={{
+                height: '100%',
+                background: `linear-gradient(135deg, ${alpha('#8b5cf6', 0.05)} 0%, ${alpha('#ffffff', 1)} 100%)`,
+                border: 1,
+                borderColor: alpha('#8b5cf6', 0.2),
+                transition: 'all 0.3s',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: 6,
+                },
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box
+                  sx={{
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                    borderRadius: 2,
+                    p: 1.5,
+                    display: 'inline-flex',
+                    mb: 3,
+                  }}
+                >
+                  <PsychologyIcon sx={{ color: 'white', fontSize: 32 }} />
+                </Box>
+                <Typography variant="h5" fontWeight={600} gutterBottom>
+                  Bounded AI Analysis
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  LLM agents constrained by rules and structured outputs. 
+                  Extract topics, sentiment, and outcomes without hallucinations.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Feature 3 */}
+          <Grid item xs={12} md={4}>
+            <Card
+              sx={{
+                height: '100%',
+                background: `linear-gradient(135deg, ${alpha('#10b981', 0.05)} 0%, ${alpha('#ffffff', 1)} 100%)`,
+                border: 1,
+                borderColor: alpha('#10b981', 0.2),
+                transition: 'all 0.3s',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: 6,
+                },
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box
+                  sx={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    borderRadius: 2,
+                    p: 1.5,
+                    display: 'inline-flex',
+                    mb: 3,
+                  }}
+                >
+                  <TrendingUpIcon sx={{ color: 'white', fontSize: 32 }} />
+                </Box>
+                <Typography variant="h5" fontWeight={600} gutterBottom>
+                  Contact-Centric Intelligence
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  All data organized by contact. View complete interaction history, 
+                  analysis results, and verified outcomes in one place.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </Container>
+
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-primary-500 to-primary-700">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Get Started?
-          </h2>
-          <p className="text-xl text-primary-100 mb-10">
-            Submit your first meeting transcript and see AI-powered analysis in action.
-          </p>
-          <Link
-            href="/meetings/new"
-            className="inline-flex items-center space-x-2 px-8 py-4 bg-white text-primary-600 rounded-lg hover:bg-gray-50 transition shadow-lg hover:shadow-xl font-medium"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Submit Meeting Now</span>
-          </Link>
-        </div>
-      </section>
-    </div>
+      <Box
+        sx={{
+          background: 'linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%)',
+          py: { xs: 8, md: 10 },
+        }}
+      >
+        <Container maxWidth="md">
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography
+              variant="h2"
+              sx={{
+                fontSize: { xs: '2rem', md: '2.5rem' },
+                fontWeight: 700,
+                color: 'white',
+                mb: 3,
+              }}
+            >
+              Ready to Get Started?
+            </Typography>
+            <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.9)', mb: 5 }}>
+              Submit your first meeting transcript and see AI-powered analysis in action.
+            </Typography>
+            <Button
+              component={Link}
+              href="/meetings/new"
+              variant="contained"
+              size="large"
+              startIcon={<AddIcon />}
+              sx={{
+                px: 5,
+                py: 2,
+                fontSize: '1.1rem',
+                bgcolor: 'white',
+                color: 'primary.main',
+                '&:hover': {
+                  bgcolor: 'rgba(255,255,255,0.9)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: 8,
+                },
+                transition: 'all 0.3s',
+              }}
+            >
+              Submit Meeting Now
+            </Button>
+          </Box>
+        </Container>
+      </Box>
+    </Box>
   )
 }

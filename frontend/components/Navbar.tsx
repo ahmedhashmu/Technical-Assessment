@@ -1,41 +1,79 @@
+'use client'
+
+import AppBar from '@mui/material/AppBar'
+import Toolbar from '@mui/material/Toolbar'
+import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Container from '@mui/material/Container'
+import Box from '@mui/material/Box'
 import Link from 'next/link'
-import { Brain, Plus, Users } from 'lucide-react'
+import PsychologyIcon from '@mui/icons-material/Psychology'
+import AddIcon from '@mui/icons-material/Add'
+import PeopleIcon from '@mui/icons-material/People'
 
 export default function Navbar() {
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <AppBar position="sticky" color="default" elevation={1} sx={{ bgcolor: 'background.paper' }}>
+      <Container maxWidth="xl">
+        <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-2 rounded-lg">
-              <Brain className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-semibold text-gray-900">
-              TruthOS
-            </span>
+          <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box
+                sx={{
+                  background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                  borderRadius: 2,
+                  p: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <PsychologyIcon sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  background: 'linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                TruthOS
+              </Typography>
+            </Box>
           </Link>
-          
-          {/* Navigation Links */}
-          <div className="flex items-center space-x-4">
-            <Link
+
+          {/* Navigation */}
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              component={Link}
               href="/meetings/new"
-              className="flex items-center space-x-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition"
+              variant="contained"
+              startIcon={<AddIcon />}
+              sx={{
+                background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #0284c7 0%, #075985 100%)',
+                },
+              }}
             >
-              <Plus className="w-4 h-4" />
-              <span>New Meeting</span>
-            </Link>
+              New Meeting
+            </Button>
             
-            <Link
+            <Button
+              component={Link}
               href="/contacts"
-              className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+              variant="outlined"
+              startIcon={<PeopleIcon />}
             >
-              <Users className="w-4 h-4" />
-              <span>Contacts</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </nav>
+              Contacts
+            </Button>
+          </Box>
+        </Toolbar>
+      </Container>
+    </AppBar>
   )
 }

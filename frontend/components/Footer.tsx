@@ -1,74 +1,100 @@
-import { Brain, Github, Mail } from 'lucide-react'
+'use client'
+
+import Box from '@mui/material/Box'
+import Container from '@mui/material/Container'
+import Typography from '@mui/material/Typography'
+import Link from '@mui/material/Link'
+import Grid from '@mui/material/Grid'
+import IconButton from '@mui/material/IconButton'
+import PsychologyIcon from '@mui/icons-material/Psychology'
+import GitHubIcon from '@mui/icons-material/GitHub'
+import EmailIcon from '@mui/icons-material/Email'
 
 export default function Footer() {
   return (
-    <footer className="bg-white border-t border-gray-200 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <Box
+      component="footer"
+      sx={{
+        bgcolor: 'background.paper',
+        borderTop: 1,
+        borderColor: 'divider',
+        py: 6,
+        mt: 'auto',
+      }}
+    >
+      <Container maxWidth="xl">
+        <Grid container spacing={4}>
           {/* Brand */}
-          <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-2 rounded-lg">
-                <Brain className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-lg font-semibold text-gray-900">
+          <Grid item xs={12} md={4}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+              <Box
+                sx={{
+                  background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                  borderRadius: 2,
+                  p: 1,
+                  display: 'flex',
+                }}
+              >
+                <PsychologyIcon sx={{ color: 'white', fontSize: 24 }} />
+              </Box>
+              <Typography variant="h6" fontWeight={700}>
                 TruthOS
-              </span>
-            </div>
-            <p className="text-sm text-gray-600">
-              Contact-centric meeting analysis with AI-powered insights.
-              One source of truth.
-            </p>
-          </div>
-          
+              </Typography>
+            </Box>
+            <Typography variant="body2" color="text.secondary">
+              Contact-centric meeting analysis with AI-powered insights. One source of truth.
+            </Typography>
+          </Grid>
+
           {/* Quick Links */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>
-                <a href="/meetings/new" className="hover:text-primary-600 transition">
-                  Submit Meeting
-                </a>
-              </li>
-              <li>
-                <a href="/contacts" className="hover:text-primary-600 transition">
-                  View Contacts
-                </a>
-              </li>
-              <li>
-                <a href="https://github.com/ahmedhashmu/Technical-Assessment" className="hover:text-primary-600 transition">
-                  Documentation
-                </a>
-              </li>
-            </ul>
-          </div>
-          
-          {/* Contact */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Connect</h3>
-            <div className="flex space-x-4">
-              <a
+          <Grid item xs={12} md={4}>
+            <Typography variant="h6" fontWeight={600} gutterBottom>
+              Quick Links
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Link href="/meetings/new" underline="hover" color="text.secondary">
+                Submit Meeting
+              </Link>
+              <Link href="/contacts" underline="hover" color="text.secondary">
+                View Contacts
+              </Link>
+              <Link
                 href="https://github.com/ahmedhashmu/Technical-Assessment"
                 target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-600 hover:text-primary-600 transition"
+                underline="hover"
+                color="text.secondary"
               >
-                <Github className="w-5 h-5" />
-              </a>
-              <a
-                href="mailto:contact@truthos.com"
-                className="text-gray-600 hover:text-primary-600 transition"
+                Documentation
+              </Link>
+            </Box>
+          </Grid>
+
+          {/* Connect */}
+          <Grid item xs={12} md={4}>
+            <Typography variant="h6" fontWeight={600} gutterBottom>
+              Connect
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <IconButton
+                href="https://github.com/ahmedhashmu/Technical-Assessment"
+                target="_blank"
+                color="primary"
               >
-                <Mail className="w-5 h-5" />
-              </a>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-8 pt-8 border-t border-gray-200 text-center text-sm text-gray-600">
-          <p>© 2026 TruthOS. Built for technical assessment.</p>
-        </div>
-      </div>
-    </footer>
+                <GitHubIcon />
+              </IconButton>
+              <IconButton href="mailto:contact@truthos.com" color="primary">
+                <EmailIcon />
+              </IconButton>
+            </Box>
+          </Grid>
+        </Grid>
+
+        <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary">
+            © 2026 TruthOS. Built for technical assessment.
+          </Typography>
+        </Box>
+      </Container>
+    </Box>
   )
 }

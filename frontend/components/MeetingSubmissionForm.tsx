@@ -3,7 +3,14 @@
 import { useState } from 'react'
 import { apiClient } from '@/lib/api-client'
 import { MeetingFormData } from '@/types'
-import { Send, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import Box from '@mui/material/Box'
+import TextField from '@mui/material/TextField'
+import Button from '@mui/material/Button'
+import MenuItem from '@mui/material/MenuItem'
+import Alert from '@mui/material/Alert'
+import CircularProgress from '@mui/material/CircularProgress'
+import SendIcon from '@mui/icons-material/Send'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 
 export default function MeetingSubmissionForm() {
   const [formData, setFormData] = useState<MeetingFormData>({
@@ -27,7 +34,6 @@ export default function MeetingSubmissionForm() {
     try {
       await apiClient.createMeeting(formData)
       setSuccess(true)
-      // Clear form
       setFormData({
         meetingId: '',
         contactId: '',
@@ -43,129 +49,90 @@ export default function MeetingSubmissionForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Success Message */}
+    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start space-x-3">
-          <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-          <div>
-            <h3 className="font-medium text-green-900">Meeting submitted successfully!</h3>
-            <p className="text-sm text-green-700 mt-1">
-              Your meeting transcript has been saved as an immutable record.
-            </p>
-          </div>
-        </div>
+        <Alert icon={<CheckCircleIcon />} severity="success" sx={{ borderRadius: 2 }}>
+          <strong>Meeting submitted successfully!</strong>
+          <br />
+          Your meeting transcript has been saved as an immutable record.
+        </Alert>
       )}
 
-      {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
-          <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
-          <div>
-            <h3 className="font-medium text-red-900">Error</h3>
-            <p className="text-sm text-red-700 mt-1">{error}</p>
-          </div>
-        </div>
+        <Alert severity="error" sx={{ borderRadius: 2 }}>
+          <strong>Error</strong>
+          <br />
+          {error}
+        </Alert>
       )}
 
-      {/* Meeting ID */}
-      <div>
-        <label htmlFor="meetingId" className="block text-sm font-medium text-gray-700 mb-2">
-          Meeting ID
-        </label>
-        <input
-          type="text"
-          id="meetingId"
-          required
-          value={formData.meetingId}
-          onChange={(e) => setFormData({ ...formData, meetingId: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          placeholder="meet_abc123"
-        />
-      </div>
+      <TextField
+        label="Meeting ID"
+        required
+        fullWidth
+        value={formData.meetingId}
+        onChange={(e) => setFormData({ ...formData, meetingId: e.target.value })}
+        placeholder="meet_abc123"
+      />
 
-      {/* Contact ID */}
-      <div>
-        <label htmlFor="contactId" className="block text-sm font-medium text-gray-700 mb-2">
-          Contact ID
-        </label>
-        <input
-          type="text"
-          id="contactId"
-          required
-          value={formData.contactId}
-          onChange={(e) => setFormData({ ...formData, contactId: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          placeholder="contact_xyz789"
-        />
-      </div>
+      <TextField
+        label="Contact ID"
+        required
+        fullWidth
+        value={formData.contactId}
+        onChange={(e) => setFormData({ ...formData, contactId: e.target.value })}
+        placeholder="contact_xyz789"
+      />
 
-      {/* Meeting Type */}
-      <div>
-        <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
-          Meeting Type
-        </label>
-        <select
-          id="type"
-          required
-          value={formData.type}
-          onChange={(e) => setFormData({ ...formData, type: e.target.value as 'sales' | 'coaching' })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-        >
-          <option value="sales">Sales</option>
-          <option value="coaching">Coaching</option>
-        </select>
-      </div>
-
-      {/* Occurred At */}
-      <div>
-        <label htmlFor="occurredAt" className="block text-sm font-medium text-gray-700 mb-2">
-          Meeting Date & Time
-        </label>
-        <input
-          type="datetime-local"
-          id="occurredAt"
-          required
-          value={formData.occurredAt}
-          onChange={(e) => setFormData({ ...formData, occurredAt: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-        />
-      </div>
-
-      {/* Transcript */}
-      <div>
-        <label htmlFor="transcript" className="block text-sm font-medium text-gray-700 mb-2">
-          Meeting Transcript
-        </label>
-        <textarea
-          id="transcript"
-          required
-          rows={10}
-          value={formData.transcript}
-          onChange={(e) => setFormData({ ...formData, transcript: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          placeholder="Enter the full meeting transcript here..."
-        />
-      </div>
-
-      {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full flex items-center justify-center space-x-2 px-6 py-4 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+      <TextField
+        select
+        label="Meeting Type"
+        required
+        fullWidth
+        value={formData.type}
+        onChange={(e) => setFormData({ ...formData, type: e.target.value as 'sales' | 'coaching' })}
       >
-        {loading ? (
-          <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span>Submitting...</span>
-          </>
-        ) : (
-          <>
-            <Send className="w-5 h-5" />
-            <span>Submit Meeting</span>
-          </>
-        )}
-      </button>
-    </form>
+        <MenuItem value="sales">Sales</MenuItem>
+        <MenuItem value="coaching">Coaching</MenuItem>
+      </TextField>
+
+      <TextField
+        label="Meeting Date & Time"
+        type="datetime-local"
+        required
+        fullWidth
+        value={formData.occurredAt}
+        onChange={(e) => setFormData({ ...formData, occurredAt: e.target.value })}
+        InputLabelProps={{ shrink: true }}
+      />
+
+      <TextField
+        label="Meeting Transcript"
+        required
+        fullWidth
+        multiline
+        rows={10}
+        value={formData.transcript}
+        onChange={(e) => setFormData({ ...formData, transcript: e.target.value })}
+        placeholder="Enter the full meeting transcript here..."
+      />
+
+      <Button
+        type="submit"
+        variant="contained"
+        size="large"
+        disabled={loading}
+        startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+        sx={{
+          py: 1.5,
+          background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #0284c7 0%, #075985 100%)',
+          },
+        }}
+      >
+        {loading ? 'Submitting...' : 'Submit Meeting'}
+      </Button>
+    </Box>
   )
 }
