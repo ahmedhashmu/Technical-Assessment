@@ -73,14 +73,66 @@ class LLMClient:
                     time.sleep(2 ** attempt)
                     continue
                 else:
-                    raise Exception(f"Failed to extract valid signals after {max_retries} attempts: {str(e)}")
+                    # Fallback to demo mode
+                    return self._generate_demo_analysis(transcript)
             
             except Exception as e:
                 if attempt < max_retries - 1:
                     time.sleep(2 ** attempt)
                     continue
                 else:
-                    raise Exception(f"LLM API error: {str(e)}")
+                    # Fallback to demo mode
+                    return self._generate_demo_analysis(transcript)
+    
+    def _generate_demo_analysis(self, transcript: str) -> AnalysisSignals:
+        """Generate demo analysis when LLM is unavailable."""
+        # Simple keyword-based analysis for demo
+        transcript_lower = transcript.lower()
+        
+        # Determine sentiment
+        positive_words = ['great', 'excellent', 'interested', 'excited', 'good', 'perfect']
+        negative_words = ['concern', 'worried', 'problem', 'issue', 'difficult', 'expensive']
+        
+        positive_count = sum(1 for word in positive_words if word in transcript_lower)
+        negative_count = sum(1 for word in negative_words if word in transcript_lower)
+        
+        if positive_count > negative_count:
+            sentiment = 'positive'
+        elif negative_count > positive_count:
+            sentiment = 'negative'
+        else:
+            sentiment = 'neutral'
+        
+        # Extract topics (simple word frequency)
+        words = transcript_lower.split()
+        common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'is', 'was', 'are', 'were', 'been', 'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'them', 'their', 'our', 'your'}
+        word_freq = {}
+        for word in words:
+            if len(word) > 4 and word not in common_words:
+                word_freq[word] = word_freq.get(word, 0) + 1
+        
+        topics = sorted(word_freq.keys(), key=lambda x: word_freq[x], reverse=True)[:5]
+        if not topics:
+            topics = ['general discussion']
+        
+        # Determine outcome
+        if 'closed' in transcript_lower or 'deal' in transcript_lower:
+            outcome = 'closed'
+        elif 'follow' in transcript_lower or 'next' in transcript_lower:
+            outcome = 'follow_up'
+        elif 'not interested' in transcript_lower or 'no interest' in transcript_lower:
+            outcome = 'no_interest'
+        else:
+            outcome = 'unknown'
+        
+        return AnalysisSignals(
+            sentiment=sentiment,
+            topics=topics,
+            objections=['Demo mode - LLM unavailable'],
+            commitments=['Demo mode - LLM unavailable'],
+            outcome=outcome,
+            summary=f"Demo analysis: This is a {sentiment} meeting discussing {', '.join(topics[:3])}. (Note: LLM API unavailable, using fallback analysis)"
+        )
     
     def _build_prompt(self, transcript: str) -> str:
         """Build structured prompt with JSON schema."""
