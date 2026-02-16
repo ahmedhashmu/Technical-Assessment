@@ -2,9 +2,30 @@
 
 import { useState } from 'react'
 import { MeetingWithAnalysis } from '@/types'
-import { ChevronDown, ChevronUp, Calendar, FileText, Brain, Sparkles, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { apiClient } from '@/lib/api-client'
+import {
+  Card,
+  CardContent,
+  CardActions,
+  Box,
+  Typography,
+  Chip,
+  Button,
+  Collapse,
+  IconButton,
+  CircularProgress,
+  Divider,
+  Stack,
+  Paper,
+} from '@mui/material'
+import {
+  ExpandMore as ExpandMoreIcon,
+  CalendarToday as CalendarIcon,
+  Description as DescriptionIcon,
+  Psychology as BrainIcon,
+  AutoAwesome as SparklesIcon,
+} from '@mui/icons-material'
 
 interface MeetingCardProps {
   meeting: MeetingWithAnalysis
@@ -29,195 +50,222 @@ export default function MeetingCard({ meeting, onAnalyze }: MeetingCardProps) {
     }
   }
 
-  const getSentimentColor = (sentiment: string) => {
+  const getSentimentColor = (sentiment: string): 'success' | 'error' | 'default' => {
     switch (sentiment) {
-      case 'positive':
-        return 'bg-green-100 text-green-700 border-green-200'
-      case 'negative':
-        return 'bg-red-100 text-red-700 border-red-200'
-      default:
-        return 'bg-gray-100 text-gray-700 border-gray-200'
+      case 'positive': return 'success'
+      case 'negative': return 'error'
+      default: return 'default'
     }
   }
 
-  const getOutcomeColor = (outcome: string) => {
+  const getOutcomeColor = (outcome: string): 'success' | 'info' | 'error' | 'default' => {
     switch (outcome) {
-      case 'closed':
-        return 'bg-green-100 text-green-700'
-      case 'follow_up':
-        return 'bg-blue-100 text-blue-700'
-      case 'no_interest':
-        return 'bg-red-100 text-red-700'
-      default:
-        return 'bg-gray-100 text-gray-700'
+      case 'closed': return 'success'
+      case 'follow_up': return 'info'
+      case 'no_interest': return 'error'
+      default: return 'default'
     }
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition">
-      {/* Header */}
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="flex items-center space-x-3 mb-2">
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                meeting.type === 'sales' ? 'bg-primary-100 text-primary-700' : 'bg-purple-100 text-purple-700'
-              }`}>
-                {meeting.type}
-              </span>
-              <span className="text-sm text-gray-500">ID: {meeting.id}</span>
-            </div>
-            <div className="flex items-center text-sm text-gray-600">
-              <Calendar className="w-4 h-4 mr-2" />
-              {format(new Date(meeting.occurredAt), 'PPP p')}
-            </div>
-          </div>
+    <Card elevation={2} sx={{ transition: 'all 0.3s', '&:hover': { elevation: 4 } }}>
+      <CardContent>
+        {/* Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Box sx={{ flex: 1 }}>
+            <Stack direction="row" spacing={1} sx={{ mb: 1.5 }}>
+              <Chip
+                label={meeting.type}
+                color={meeting.type === 'sales' ? 'primary' : 'secondary'}
+                size="small"
+              />
+              <Chip
+                label={`ID: ${meeting.id}`}
+                variant="outlined"
+                size="small"
+              />
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <CalendarIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary">
+                {format(new Date(meeting.occurredAt), 'PPP p')}
+              </Typography>
+            </Stack>
+          </Box>
           
           {!meeting.analysis && (
-            <button
+            <Button
+              variant="contained"
+              startIcon={analyzing ? <CircularProgress size={16} color="inherit" /> : <BrainIcon />}
               onClick={handleAnalyze}
               disabled={analyzing}
-              className="flex items-center space-x-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition disabled:opacity-50 text-sm font-medium"
+              size="small"
             >
-              {analyzing ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Analyzing...</span>
-                </>
-              ) : (
-                <>
-                  <Brain className="w-4 h-4" />
-                  <span>Analyze</span>
-                </>
-              )}
-            </button>
+              {analyzing ? 'Analyzing...' : 'Analyze'}
+            </Button>
           )}
-        </div>
+        </Box>
 
         {/* Transcript Preview */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-4">
-          <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
-            <FileText className="w-4 h-4 mr-2" />
-            Transcript Preview
-          </div>
-          <p className="text-sm text-gray-600 line-clamp-2">
+        <Paper elevation={0} sx={{ bgcolor: 'grey.50', p: 2, mb: 2, borderRadius: 2 }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+            <DescriptionIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+            <Typography variant="body2" fontWeight={500} color="text.secondary">
+              Transcript Preview
+            </Typography>
+          </Stack>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
             {meeting.transcript}
-          </p>
-        </div>
+          </Typography>
+        </Paper>
 
         {/* Analysis Results */}
         {meeting.analysis && (
-          <div className="border-t border-gray-200 pt-4 mt-4">
-            <div className="flex items-center text-sm font-medium text-gray-900 mb-3">
-              <Sparkles className="w-4 h-4 mr-2 text-primary-500" />
-              AI Analysis
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div>
-                <span className="text-xs text-gray-500 block mb-1">Sentiment</span>
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getSentimentColor(meeting.analysis.sentiment)}`}>
-                  {meeting.analysis.sentiment}
-                </span>
-              </div>
-              <div>
-                <span className="text-xs text-gray-500 block mb-1">Outcome</span>
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getOutcomeColor(meeting.analysis.outcome)}`}>
-                  {meeting.analysis.outcome.replace('_', ' ')}
-                </span>
-              </div>
-            </div>
+          <>
+            <Divider sx={{ my: 2 }} />
+            <Box>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                <SparklesIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+                <Typography variant="body2" fontWeight={600}>
+                  AI Analysis
+                </Typography>
+              </Stack>
+              
+              <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                <Box>
+                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                    Sentiment
+                  </Typography>
+                  <Chip
+                    label={meeting.analysis.sentiment}
+                    color={getSentimentColor(meeting.analysis.sentiment)}
+                    size="small"
+                  />
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                    Outcome
+                  </Typography>
+                  <Chip
+                    label={meeting.analysis.outcome.replace('_', ' ')}
+                    color={getOutcomeColor(meeting.analysis.outcome)}
+                    size="small"
+                  />
+                </Box>
+              </Stack>
 
-            <div className="bg-primary-50 rounded-lg p-4">
-              <p className="text-sm text-gray-700">{meeting.analysis.summary}</p>
-            </div>
-          </div>
+              <Paper elevation={0} sx={{ bgcolor: 'primary.50', p: 2, borderRadius: 2 }}>
+                <Typography variant="body2" color="text.primary">
+                  {meeting.analysis.summary}
+                </Typography>
+              </Paper>
+            </Box>
+          </>
         )}
+      </CardContent>
 
-        {/* Expand Button */}
-        <button
+      <CardActions sx={{ justifyContent: 'center', pb: 2 }}>
+        <Button
           onClick={() => setExpanded(!expanded)}
-          className="w-full mt-4 flex items-center justify-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition"
+          endIcon={
+            <ExpandMoreIcon
+              sx={{
+                transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s',
+              }}
+            />
+          }
+          size="small"
         >
-          {expanded ? (
-            <>
-              <ChevronUp className="w-4 h-4" />
-              <span>Show Less</span>
-            </>
-          ) : (
-            <>
-              <ChevronDown className="w-4 h-4" />
-              <span>Show More</span>
-            </>
-          )}
-        </button>
-      </div>
+          {expanded ? 'Show Less' : 'Show More'}
+        </Button>
+      </CardActions>
 
       {/* Expanded Content */}
-      {expanded && (
-        <div className="border-t border-gray-200 bg-gray-50 p-6">
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        <Divider />
+        <CardContent sx={{ bgcolor: 'grey.50' }}>
           {/* Full Transcript */}
-          <div className="mb-6">
-            <h4 className="font-medium text-gray-900 mb-3">Full Transcript</h4>
-            <div className="bg-white rounded-lg p-4 border border-gray-200">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{meeting.transcript}</p>
-            </div>
-          </div>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1.5 }}>
+              Full Transcript
+            </Typography>
+            <Paper elevation={0} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2 }}>
+              <Typography variant="body2" color="text.primary" sx={{ whiteSpace: 'pre-wrap' }}>
+                {meeting.transcript}
+              </Typography>
+            </Paper>
+          </Box>
 
           {/* Detailed Analysis */}
           {meeting.analysis && (
-            <div>
-              <h4 className="font-medium text-gray-900 mb-3">Detailed Analysis</h4>
+            <Box>
+              <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1.5 }}>
+                Detailed Analysis
+              </Typography>
               
-              <div className="space-y-4">
+              <Stack spacing={2}>
                 {/* Topics */}
                 {meeting.analysis.topics.length > 0 && (
-                  <div>
-                    <span className="text-sm font-medium text-gray-700 block mb-2">Topics Discussed</span>
-                    <div className="flex flex-wrap gap-2">
+                  <Box>
+                    <Typography variant="body2" fontWeight={500} color="text.secondary" sx={{ mb: 1 }}>
+                      Topics Discussed
+                    </Typography>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                       {meeting.analysis.topics.map((topic, idx) => (
-                        <span key={idx} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                          {topic}
-                        </span>
+                        <Chip key={idx} label={topic} color="info" size="small" variant="outlined" />
                       ))}
-                    </div>
-                  </div>
+                    </Stack>
+                  </Box>
                 )}
 
                 {/* Objections */}
                 {meeting.analysis.objections.length > 0 && (
-                  <div>
-                    <span className="text-sm font-medium text-gray-700 block mb-2">Objections Raised</span>
-                    <ul className="space-y-1">
+                  <Box>
+                    <Typography variant="body2" fontWeight={500} color="text.secondary" sx={{ mb: 1 }}>
+                      Objections Raised
+                    </Typography>
+                    <Stack spacing={0.5}>
                       {meeting.analysis.objections.map((objection, idx) => (
-                        <li key={idx} className="text-sm text-gray-600 flex items-start">
-                          <span className="text-red-500 mr-2">•</span>
+                        <Typography key={idx} variant="body2" color="text.secondary" sx={{ display: 'flex' }}>
+                          <Box component="span" sx={{ color: 'error.main', mr: 1 }}>•</Box>
                           {objection}
-                        </li>
+                        </Typography>
                       ))}
-                    </ul>
-                  </div>
+                    </Stack>
+                  </Box>
                 )}
 
                 {/* Commitments */}
                 {meeting.analysis.commitments.length > 0 && (
-                  <div>
-                    <span className="text-sm font-medium text-gray-700 block mb-2">Commitments Made</span>
-                    <ul className="space-y-1">
+                  <Box>
+                    <Typography variant="body2" fontWeight={500} color="text.secondary" sx={{ mb: 1 }}>
+                      Commitments Made
+                    </Typography>
+                    <Stack spacing={0.5}>
                       {meeting.analysis.commitments.map((commitment, idx) => (
-                        <li key={idx} className="text-sm text-gray-600 flex items-start">
-                          <span className="text-green-500 mr-2">✓</span>
+                        <Typography key={idx} variant="body2" color="text.secondary" sx={{ display: 'flex' }}>
+                          <Box component="span" sx={{ color: 'success.main', mr: 1 }}>✓</Box>
                           {commitment}
-                        </li>
+                        </Typography>
                       ))}
-                    </ul>
-                  </div>
+                    </Stack>
+                  </Box>
                 )}
-              </div>
-            </div>
+              </Stack>
+            </Box>
           )}
-        </div>
-      )}
-    </div>
+        </CardContent>
+      </Collapse>
+    </Card>
   )
 }

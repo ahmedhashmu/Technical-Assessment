@@ -1,112 +1,167 @@
-import { Users, Search } from 'lucide-react'
-import Link from 'next/link'
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Stack,
+  TextField,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  CardActionArea,
+  Alert,
+} from '@mui/material'
+import {
+  People as UsersIcon,
+  Search as SearchIcon,
+} from '@mui/icons-material'
 
 export default function ContactsPage() {
-  // Sample contact IDs for demo
+  const router = useRouter()
+  const [searchValue, setSearchValue] = useState('')
+
   const sampleContacts = [
     'contact_001',
     'contact_002',
     'contact_003',
   ]
 
+  const handleSearch = () => {
+    if (searchValue.trim()) {
+      router.push(`/contacts/${searchValue.trim()}`)
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 6 }}>
+      <Container maxWidth="lg">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-primary-100 p-3 rounded-lg">
-              <Users className="w-6 h-6 text-primary-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900">
+        <Box sx={{ mb: 4 }}>
+          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+            <Paper
+              elevation={0}
+              sx={{
+                bgcolor: 'primary.50',
+                p: 1.5,
+                borderRadius: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <UsersIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+            </Paper>
+            <Typography variant="h4" fontWeight={700} color="text.primary">
               Contacts
-            </h1>
-          </div>
-          <p className="text-gray-600">
+            </Typography>
+          </Stack>
+          <Typography variant="body1" color="text.secondary">
             View meeting history and analysis for each contact
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         {/* Search Box */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <label htmlFor="contactSearch" className="block text-sm font-medium text-gray-700 mb-3">
+        <Paper elevation={2} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
+          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2 }}>
             Search by Contact ID
-          </label>
-          <div className="flex gap-3">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                id="contactSearch"
-                placeholder="Enter contact ID (e.g., contact_xyz789)"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    const value = (e.target as HTMLInputElement).value
-                    if (value) {
-                      window.location.href = `/contacts/${value}`
-                    }
-                  }
-                }}
-              />
-            </div>
-            <button
-              onClick={() => {
-                const input = document.getElementById('contactSearch') as HTMLInputElement
-                if (input.value) {
-                  window.location.href = `/contacts/${input.value}`
-                }
+          </Typography>
+          <Stack direction="row" spacing={2}>
+            <TextField
+              fullWidth
+              placeholder="Enter contact ID (e.g., contact_xyz789)"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyPress={handleKeyPress}
+              InputProps={{
+                startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
               }}
-              className="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition font-medium"
+            />
+            <Button
+              variant="contained"
+              onClick={handleSearch}
+              sx={{ minWidth: 120 }}
             >
               Search
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Stack>
+        </Paper>
 
         {/* Sample Contacts */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Sample Contacts</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
+            Sample Contacts
+          </Typography>
+          <Grid container spacing={3}>
             {sampleContacts.map((contactId) => (
-              <Link
-                key={contactId}
-                href={`/contacts/${contactId}`}
-                className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md hover:border-primary-300 transition"
-              >
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="bg-primary-100 p-2 rounded-lg">
-                    <Users className="w-5 h-5 text-primary-600" />
-                  </div>
-                  <span className="font-medium text-gray-900">{contactId}</span>
-                </div>
-                <p className="text-sm text-gray-600">
-                  View meeting history and AI analysis
-                </p>
-              </Link>
+              <Grid item xs={12} sm={6} md={4} key={contactId}>
+                <Card
+                  elevation={2}
+                  sx={{
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 4,
+                    },
+                  }}
+                >
+                  <CardActionArea onClick={() => router.push(`/contacts/${contactId}`)}>
+                    <CardContent>
+                      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1.5 }}>
+                        <Paper
+                          elevation={0}
+                          sx={{
+                            bgcolor: 'primary.50',
+                            p: 1,
+                            borderRadius: 1.5,
+                            display: 'flex',
+                          }}
+                        >
+                          <UsersIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+                        </Paper>
+                        <Typography variant="subtitle1" fontWeight={600}>
+                          {contactId}
+                        </Typography>
+                      </Stack>
+                      <Typography variant="body2" color="text.secondary">
+                        View meeting history and AI analysis
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
             ))}
-          </div>
-        </div>
+          </Grid>
+        </Box>
 
         {/* Info Box */}
-        <div className="mt-8 bg-primary-50 border border-primary-100 rounded-lg p-6">
-          <h3 className="font-medium text-primary-900 mb-2">How to Use</h3>
-          <ul className="space-y-2 text-sm text-primary-700">
-            <li className="flex items-start">
-              <span className="mr-2">1.</span>
-              <span>Enter a contact ID in the search box above</span>
-            </li>
-            <li className="flex items-start">
-              <span className="mr-2">2.</span>
-              <span>View all meetings associated with that contact</span>
-            </li>
-            <li className="flex items-start">
-              <span className="mr-2">3.</span>
-              <span>Click "Analyze" on any meeting to extract AI insights</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+        <Alert severity="info" sx={{ borderRadius: 2 }}>
+          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
+            How to Use
+          </Typography>
+          <Stack spacing={0.5}>
+            <Typography variant="body2">
+              1. Enter a contact ID in the search box above
+            </Typography>
+            <Typography variant="body2">
+              2. View all meetings associated with that contact
+            </Typography>
+            <Typography variant="body2">
+              3. Click "Analyze" on any meeting to extract AI insights
+            </Typography>
+          </Stack>
+        </Alert>
+      </Container>
+    </Box>
   )
 }

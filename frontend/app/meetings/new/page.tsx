@@ -1,40 +1,53 @@
 import MeetingSubmissionForm from '@/components/MeetingSubmissionForm'
-import { FileText } from 'lucide-react'
+import { Box, Container, Typography, Paper, Stack, Alert } from '@mui/material'
+import { Description as FileTextIcon } from '@mui/icons-material'
 
 export default function NewMeetingPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 6 }}>
+      <Container maxWidth="md">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-primary-100 p-3 rounded-lg">
-              <FileText className="w-6 h-6 text-primary-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900">
+        <Box sx={{ mb: 4 }}>
+          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+            <Paper
+              elevation={0}
+              sx={{
+                bgcolor: 'primary.50',
+                p: 1.5,
+                borderRadius: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <FileTextIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+            </Paper>
+            <Typography variant="h4" fontWeight={700} color="text.primary">
               Submit Meeting Transcript
-            </h1>
-          </div>
-          <p className="text-gray-600">
+            </Typography>
+          </Stack>
+          <Typography variant="body1" color="text.secondary">
             Ingest a new meeting transcript as an immutable record. 
             All data will be stored securely and cannot be modified after submission.
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         {/* Form Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <Paper elevation={2} sx={{ p: 4, borderRadius: 3, mb: 3 }}>
           <MeetingSubmissionForm />
-        </div>
+        </Paper>
 
         {/* Info Box */}
-        <div className="mt-6 bg-primary-50 border border-primary-100 rounded-lg p-4">
-          <h3 className="font-medium text-primary-900 mb-2">About Immutable Records</h3>
-          <p className="text-sm text-primary-700">
+        <Alert severity="info" sx={{ borderRadius: 2 }}>
+          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5 }}>
+            About Immutable Records
+          </Typography>
+          <Typography variant="body2">
             Meeting transcripts are stored as immutable truth. Once submitted, they cannot be 
             modified or deleted. This ensures data integrity and provides a complete audit trail.
-          </p>
-        </div>
-      </div>
-    </div>
+          </Typography>
+        </Alert>
+      </Container>
+    </Box>
   )
 }
