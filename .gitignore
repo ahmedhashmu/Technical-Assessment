@@ -71,3 +71,8 @@ logs/
 
 # Assessment document
 *.docx
+
+# Credentials (never commit)
+CREDENTIALS.md
+backend/.env
+frontend/.env.local
