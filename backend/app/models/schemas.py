@@ -65,10 +65,26 @@ class MeetingWithAnalysis(BaseModel):
     analysis: MeetingAnalysisResponse | None = None
 
 
+class MeetingBasicView(BaseModel):
+    """Schema for basic user view (metadata only)."""
+    id: str
+    contactId: str
+    type: str
+    occurredAt: datetime
+    createdAt: datetime
+    # Note: transcript and analysis are excluded
+
+
 class ContactMeetingsResponse(BaseModel):
     """Schema for contact meetings response."""
     contactId: str
     meetings: List[MeetingWithAnalysis]
+
+
+class ContactMeetingsBasicResponse(BaseModel):
+    """Schema for contact meetings response (basic user)."""
+    contactId: str
+    meetings: List[MeetingBasicView]
 
 
 # Error Schema

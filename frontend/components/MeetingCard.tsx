@@ -30,9 +30,10 @@ import {
 interface MeetingCardProps {
   meeting: MeetingWithAnalysis
   onAnalyze?: (meetingId: string) => void
+  userRole?: 'operator' | 'basic'
 }
 
-export default function MeetingCard({ meeting, onAnalyze }: MeetingCardProps) {
+export default function MeetingCard({ meeting, onAnalyze, userRole = 'operator' }: MeetingCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
 
@@ -67,6 +68,53 @@ export default function MeetingCard({ meeting, onAnalyze }: MeetingCardProps) {
     }
   }
 
+  // Basic users see limited view
+  if (userRole === 'basic') {
+    return (
+      <Card elevation={2} sx={{ transition: 'all 0.3s', '&:hover': { elevation: 4 } }}>
+        <CardContent>
+          {/* Header */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+            <Box sx={{ flex: 1 }}>
+              <Stack direction="row" spacing={1} sx={{ mb: 1.5 }}>
+                <Chip
+                  label={meeting.type}
+                  color={meeting.type === 'sales' ? 'primary' : 'secondary'}
+                  size="small"
+                />
+                <Chip
+                  label={`ID: ${meeting.id}`}
+                  variant="outlined"
+                  size="small"
+                />
+                <Chip
+                  label="Limited Access"
+                  color="warning"
+                  size="small"
+                  variant="outlined"
+                />
+              </Stack>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <CalendarIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <Typography variant="body2" color="text.secondary">
+                  {format(new Date(meeting.occurredAt), 'PPP p')}
+                </Typography>
+              </Stack>
+            </Box>
+          </Box>
+
+          {/* Limited Access Message */}
+          <Paper elevation={0} sx={{ bgcolor: 'warning.50', p: 2, borderRadius: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              🔒 Transcript and analysis are only available to operators
+            </Typography>
+          </Paper>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Operator sees full view
   return (
     <Card elevation={2} sx={{ transition: 'all 0.3s', '&:hover': { elevation: 4 } }}>
       <CardContent>

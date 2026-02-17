@@ -14,11 +14,20 @@ import {
   CircularProgress,
   Button,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
 } from '@mui/material'
 import {
   Person as UserIcon,
   ErrorOutline as AlertCircleIcon,
+  AdminPanelSettings as OperatorIcon,
+  Person as BasicIcon,
 } from '@mui/icons-material'
+
+type UserRole = 'operator' | 'basic'
 
 export default function ContactPage() {
   const params = useParams()
@@ -27,13 +36,14 @@ export default function ContactPage() {
   const [meetings, setMeetings] = useState<MeetingWithAnalysis[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<UserRole>('operator')
 
-  const fetchMeetings = async () => {
+  const fetchMeetings = async (role: UserRole) => {
     try {
       setLoading(true)
-      const data = await apiClient.getContactMeetings(contactId)
-      setMeetings(data)
       setError(null)
+      const data = await apiClient.getContactMeetings(contactId, role)
+      setMeetings(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load meetings')
     } finally {
@@ -42,11 +52,15 @@ export default function ContactPage() {
   }
 
   useEffect(() => {
-    fetchMeetings()
-  }, [contactId])
+    fetchMeetings(userRole)
+  }, [contactId, userRole])
 
   const handleAnalyze = () => {
-    fetchMeetings()
+    fetchMeetings(userRole)
+  }
+
+  const handleRoleChange = (newRole: UserRole) => {
+    setUserRole(newRole)
   }
 
   if (loading) {
@@ -90,7 +104,7 @@ export default function ContactPage() {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             {error}
           </Typography>
-          <Button variant="contained" onClick={fetchMeetings} fullWidth>
+          <Button variant="contained" onClick={() => fetchMeetings(userRole)} fullWidth>
             Try Again
           </Button>
         </Paper>
@@ -117,7 +131,7 @@ export default function ContactPage() {
             >
               <UserIcon sx={{ fontSize: 28, color: 'primary.main' }} />
             </Paper>
-            <Box>
+            <Box sx={{ flex: 1 }}>
               <Typography variant="h4" fontWeight={700} color="text.primary">
                 Contact: {contactId}
               </Typography>
@@ -127,6 +141,54 @@ export default function ContactPage() {
             </Box>
           </Stack>
         </Box>
+
+        {/* Role Selector */}
+        <Paper elevation={2} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
+          <Stack direction="row" spacing={3} alignItems="center">
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel>User Role</InputLabel>
+              <Select
+                value={userRole}
+                label="User Role"
+                onChange={(e) => handleRoleChange(e.target.value as UserRole)}
+              >
+                <MenuItem value="operator">
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <OperatorIcon fontSize="small" />
+                    <span>Operator (Admin)</span>
+                  </Stack>
+                </MenuItem>
+                <MenuItem value="basic">
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <BasicIcon fontSize="small" />
+                    <span>Basic User</span>
+                  </Stack>
+                </MenuItem>
+              </Select>
+            </FormControl>
+
+            <Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                Current Access Level:
+              </Typography>
+              <Chip
+                icon={userRole === 'operator' ? <OperatorIcon /> : <BasicIcon />}
+                label={userRole === 'operator' ? 'Full Access' : 'Limited Access'}
+                color={userRole === 'operator' ? 'success' : 'warning'}
+              />
+            </Box>
+
+            <Box sx={{ flex: 1 }}>
+              <Alert severity={userRole === 'operator' ? 'info' : 'warning'} sx={{ borderRadius: 2 }}>
+                <Typography variant="body2">
+                  {userRole === 'operator' 
+                    ? '✓ You can see full transcripts and AI analysis'
+                    : '⚠ You can only see meeting metadata (no transcripts or analysis)'}
+                </Typography>
+              </Alert>
+            </Box>
+          </Stack>
+        </Paper>
 
         {/* Meetings List */}
         {meetings.length === 0 ? (
@@ -149,6 +211,7 @@ export default function ContactPage() {
                 key={meeting.id}
                 meeting={meeting}
                 onAnalyze={handleAnalyze}
+                userRole={userRole}
               />
             ))}
           </Stack>
