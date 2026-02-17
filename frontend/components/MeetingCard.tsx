@@ -36,11 +36,9 @@ interface MeetingCardProps {
 export default function MeetingCard({ meeting, onAnalyze, userRole = 'operator' }: MeetingCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
-  const [analyzeError, setAnalyzeError] = useState<string | null>(null)
 
   const handleAnalyze = async () => {
     setAnalyzing(true)
-    setAnalyzeError(null)
     try {
       await apiClient.analyzeMeeting(meeting.id)
       if (onAnalyze) {
@@ -48,7 +46,6 @@ export default function MeetingCard({ meeting, onAnalyze, userRole = 'operator' 
       }
     } catch (error) {
       console.error('Analysis failed:', error)
-      setAnalyzeError(error instanceof Error ? error.message : 'Failed to analyze meeting')
     } finally {
       setAnalyzing(false)
     }
@@ -145,22 +142,15 @@ export default function MeetingCard({ meeting, onAnalyze, userRole = 'operator' 
           </Box>
           
           {!meeting.analysis && (
-            <Box>
-              <Button
-                variant="contained"
-                startIcon={analyzing ? <CircularProgress size={16} color="inherit" /> : <BrainIcon />}
-                onClick={handleAnalyze}
-                disabled={analyzing}
-                size="small"
-              >
-                {analyzing ? 'Analyzing...' : 'Analyze'}
-              </Button>
-              {analyzeError && (
-                <Typography variant="caption" color="error" display="block" sx={{ mt: 1 }}>
-                  {analyzeError}
-                </Typography>
-              )}
-            </Box>
+            <Button
+              variant="contained"
+              startIcon={analyzing ? <CircularProgress size={16} color="inherit" /> : <BrainIcon />}
+              onClick={handleAnalyze}
+              disabled={analyzing}
+              size="small"
+            >
+              {analyzing ? 'Analyzing...' : 'Analyze'}
+            </Button>
           )}
         </Box>
 

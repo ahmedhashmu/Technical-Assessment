@@ -1,13 +1,13 @@
 """Main FastAPI application."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import meetings, analysis, contacts
+from app.routers import meetings, analysis, contacts, auth
 from app.core.config import settings
 
 app = FastAPI(
     title="TruthOS Meeting Intelligence API",
     description="Contact-centric meeting analysis with AI-powered insights",
-    version="1.0.0"
+    version="2.0.0"
 )
 
 # CORS middleware
@@ -20,6 +20,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router)  # Auth router first
 app.include_router(meetings.router)
 app.include_router(analysis.router)
 app.include_router(contacts.router)

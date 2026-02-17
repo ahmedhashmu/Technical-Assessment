@@ -22,10 +22,10 @@ def get_contact_meetings(
     """
     Get all meetings for a contact with role-based access control.
     
-    **Requires authentication token.**
+    **Requires JWT authentication.**
     
-    - **operator**: Full access (transcript + analysis)
-    - **basic**: Metadata only (no transcript, no analysis)
+    - **operator** (admin@truthos.com): Full access (transcript + analysis)
+    - **basic** (user@truthos.com): Metadata only (no transcript, no analysis)
     
     Returns meetings ordered by occurredAt descending.
     """

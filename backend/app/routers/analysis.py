@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.schemas import MeetingAnalysisResponse
 from app.services.analysis_engine import AnalysisEngine
-from app.core.auth import require_operator_role, UserRole
+from app.core.auth import require_operator_role
 
 router = APIRouter(prefix="/api/meetings", tags=["analysis"])
 
@@ -13,12 +13,12 @@ router = APIRouter(prefix="/api/meetings", tags=["analysis"])
 def analyze_meeting(
     meeting_id: str,
     db: Session = Depends(get_db),
-    user_role: UserRole = Depends(require_operator_role)
+    user: dict = Depends(require_operator_role)
 ):
     """
     Analyze a meeting transcript using LLM.
     
-    **Requires operator role.**
+    **Requires operator role (admin@truthos.com).**
     
     Extracts structured signals: topics, objections, commitments, sentiment, outcome.
     """

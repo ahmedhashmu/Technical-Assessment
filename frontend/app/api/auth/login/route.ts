@@ -2,18 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest) {
   try {
-    const meetingId = params.id
+    const body = await request.json()
     
-    const response = await fetch(`${BACKEND_URL}/api/meetings/${meetingId}/analyze`, {
+    const response = await fetch(`${BACKEND_URL}/api/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify(body),
     })
 
     const data = await response.json()
@@ -24,9 +22,9 @@ export async function POST(
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error analyzing meeting:', error)
+    console.error('Error during login:', error)
     return NextResponse.json(
-      { detail: { code: 'INTERNAL_ERROR', message: 'Failed to analyze meeting' } },
+      { detail: { code: 'INTERNAL_ERROR', message: 'Login failed' } },
       { status: 500 }
     )
   }

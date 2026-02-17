@@ -1,94 +1,142 @@
-"""Authentication and authorization utilities."""
-from fastapi import Header, HTTPException, Depends
-from typing import Literal
+"""Authentication and authorization utilities with JWT."""
+from fastapi import HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from jose import JWTError, jwt
+from datetime import datetime, timedelta
+from typing import Literal, Optional
+import os
 
-
+# User role type
 UserRole = Literal["operator", "basic"]
 
-# Mock token to role mapping (for demo purposes)
-TOKEN_ROLE_MAP = {
-    "basic-test-token": "basic",
-    "operator-test-token": "operator"
+# JWT Configuration
+SECRET_KEY = os.getenv("JWT_SECRET", "d687019fcd2ef40a5710aa556ec1902c")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hour
+
+# Static users for demo (in production, use database)
+USERS_DB = {
+    "admin@truthos.com": {
+        "email": "admin@truthos.com",
+        "password": "AdminPass123",  # In production, use hashed passwords
+        "role": "operator"
+    },
+    "user@truthos.com": {
+        "email": "user@truthos.com",
+        "password": "UserPass123",  # In production, use hashed passwords
+        "role": "basic"
+    }
 }
 
+# HTTP Bearer security scheme
+security = HTTPBearer()
 
-async def get_token_from_header(authorization: str = Header(None)) -> str:
+
+def create_access_token(email: str, role: str) -> str:
     """
-    Extract token from Authorization header.
+    Create a JWT access token.
     
     Args:
-        authorization: Authorization header value (Bearer <token>)
+        email: User email
+        role: User role (operator or basic)
         
     Returns:
-        Extracted token
-        
-    Raises:
-        HTTPException: 401 if header missing or invalid format
+        JWT token string
     """
-    if authorization is None:
-        raise HTTPException(
-            status_code=401,
-            detail={
-                "code": "MISSING_TOKEN",
-                "message": "Missing Authorization header"
-            }
-        )
-    
-    # Check for Bearer token format
-    parts = authorization.split()
-    if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise HTTPException(
-            status_code=401,
-            detail={
-                "code": "INVALID_TOKEN_FORMAT",
-                "message": "Authorization header must be in format: Bearer <token>"
-            }
-        )
-    
-    return parts[1]
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode = {
+        "sub": email,
+        "role": role,
+        "exp": expire
+    }
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
 
-async def get_user_role(token: str = Depends(get_token_from_header)) -> UserRole:
+def verify_token(token: str) -> dict:
     """
-    Dependency to extract and validate user role from token.
+    Verify and decode JWT token.
     
     Args:
-        token: Bearer token from Authorization header
+        token: JWT token string
         
     Returns:
-        Validated user role
+        Decoded token payload
         
     Raises:
-        HTTPException: 401 if token invalid
+        HTTPException: 401 if token invalid or expired
     """
-    role = TOKEN_ROLE_MAP.get(token)
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        role: str = payload.get("role")
+        
+        if email is None or role is None:
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "code": "INVALID_TOKEN",
+                    "message": "Invalid token payload"
+                }
+            )
+        
+        return {"email": email, "role": role}
     
-    if role is None:
+    except JWTError as e:
         raise HTTPException(
             status_code=401,
             detail={
                 "code": "INVALID_TOKEN",
-                "message": "Invalid authentication token"
+                "message": f"Token validation failed: {str(e)}"
             }
         )
+
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    """
+    Dependency to extract and validate user from JWT token.
     
-    return role
+    Args:
+        credentials: HTTP Bearer credentials from Authorization header
+        
+    Returns:
+        User dict with email and role
+        
+    Raises:
+        HTTPException: 401 if token missing or invalid
+    """
+    token = credentials.credentials
+    user = verify_token(token)
+    return user
 
 
-async def require_operator_role(user_role: UserRole = Depends(get_user_role)) -> UserRole:
+async def get_user_role(user: dict = Depends(get_current_user)) -> UserRole:
+    """
+    Dependency to extract user role from authenticated user.
+    
+    Args:
+        user: Authenticated user dict
+        
+    Returns:
+        User role
+    """
+    return user["role"]
+
+
+async def require_operator_role(user: dict = Depends(get_current_user)) -> dict:
     """
     Dependency to enforce operator role requirement.
     
     Args:
-        user_role: User role from token
+        user: Authenticated user dict
         
     Returns:
-        Validated operator role
+        User dict if operator
         
     Raises:
         HTTPException: 403 if user is not operator
     """
-    if user_role != "operator":
+    if user["role"] != "operator":
         raise HTTPException(
             status_code=403,
             detail={
@@ -97,4 +145,27 @@ async def require_operator_role(user_role: UserRole = Depends(get_user_role)) ->
             }
         )
     
-    return user_role
+    return user
+
+
+def authenticate_user(email: str, password: str) -> Optional[dict]:
+    """
+    Authenticate user with email and password.
+    
+    Args:
+        email: User email
+        password: User password
+        
+    Returns:
+        User dict if authentication successful, None otherwise
+    """
+    user = USERS_DB.get(email)
+    
+    if not user:
+        return None
+    
+    # In production, use password hashing (bcrypt)
+    if user["password"] != password:
+        return None
+    
+    return user

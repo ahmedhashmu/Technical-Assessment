@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
@@ -20,28 +21,32 @@ import PersonIcon from '@mui/icons-material/Person'
 import LogoutIcon from '@mui/icons-material/Logout'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { apiClient } from '@/lib/api-client'
-import LoginSelector from './LoginSelector'
 
 export default function Navbar() {
+  const router = useRouter()
   const [currentRole, setCurrentRole] = useState<'operator' | 'basic' | null>(null)
-  const [showLogin, setShowLogin] = useState(false)
+  const [currentEmail, setCurrentEmail] = useState<string | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   useEffect(() => {
     // Check authentication status on mount
     const role = apiClient.getCurrentRole()
+    const email = apiClient.getCurrentEmail()
     setCurrentRole(role)
+    setCurrentEmail(email)
     
+    // Redirect to login if not authenticated
     if (!role) {
-      setShowLogin(true)
+      router.push('/login')
     }
-  }, [])
+  }, [router])
 
   const handleLogout = () => {
     apiClient.clearToken()
     setCurrentRole(null)
+    setCurrentEmail(null)
     setAnchorEl(null)
-    setShowLogin(true)
+    router.push('/login')
   }
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -53,99 +58,99 @@ export default function Navbar() {
   }
 
   return (
-    <>
-      <AppBar position="sticky" color="default" elevation={1} sx={{ bgcolor: 'background.paper' }}>
-        <Container maxWidth="xl">
-          <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-            {/* Logo */}
-            <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Box
-                  sx={{
-                    background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
-                    borderRadius: 2,
-                    p: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <PsychologyIcon sx={{ color: 'white', fontSize: 28 }} />
-                </Box>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 700,
-                    background: 'linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  TruthOS
-                </Typography>
-              </Box>
-            </Link>
-
-            {/* Navigation */}
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Button
-                component={Link}
-                href="/meetings/new"
-                variant="contained"
-                startIcon={<AddIcon />}
+    <AppBar position="sticky" color="default" elevation={1} sx={{ bgcolor: 'background.paper' }}>
+      <Container maxWidth="xl">
+        <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+          {/* Logo */}
+          <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box
                 sx={{
                   background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #0284c7 0%, #075985 100%)',
-                  },
+                  borderRadius: 2,
+                  p: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                New Meeting
-              </Button>
-              
-              <Button
-                component={Link}
-                href="/contacts"
-                variant="outlined"
-                startIcon={<PeopleIcon />}
+                <PsychologyIcon sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  background: 'linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
               >
-                Contacts
-              </Button>
-
-              {/* User Role Display */}
-              {currentRole && (
-                <>
-                  <Chip
-                    icon={currentRole === 'operator' ? <AdminPanelSettingsIcon /> : <PersonIcon />}
-                    label={currentRole === 'operator' ? 'Operator' : 'Basic User'}
-                    color={currentRole === 'operator' ? 'success' : 'warning'}
-                    size="small"
-                  />
-                  
-                  <IconButton onClick={handleMenuOpen} size="small">
-                    <AccountCircleIcon />
-                  </IconButton>
-                  
-                  <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleMenuClose}
-                  >
-                    <MenuItem onClick={handleLogout}>
-                      <LogoutIcon sx={{ mr: 1, fontSize: 20 }} />
-                      Logout
-                    </MenuItem>
-                  </Menu>
-                </>
-              )}
+                TruthOS
+              </Typography>
             </Box>
-          </Toolbar>
-        </Container>
-      </AppBar>
+          </Link>
 
-      {/* Login Modal */}
-      <LoginSelector open={showLogin} onClose={() => setShowLogin(false)} />
-    </>
+          {/* Navigation */}
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Button
+              component={Link}
+              href="/meetings/new"
+              variant="contained"
+              startIcon={<AddIcon />}
+              sx={{
+                background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #0284c7 0%, #075985 100%)',
+                },
+              }}
+            >
+              New Meeting
+            </Button>
+            
+            <Button
+              component={Link}
+              href="/contacts"
+              variant="outlined"
+              startIcon={<PeopleIcon />}
+            >
+              Contacts
+            </Button>
+
+            {/* User Role Display */}
+            {currentRole && (
+              <>
+                <Chip
+                  icon={currentRole === 'operator' ? <AdminPanelSettingsIcon /> : <PersonIcon />}
+                  label={currentRole === 'operator' ? 'Admin' : 'Basic User'}
+                  color={currentRole === 'operator' ? 'success' : 'warning'}
+                  size="small"
+                />
+                
+                <IconButton onClick={handleMenuOpen} size="small">
+                  <AccountCircleIcon />
+                </IconButton>
+                
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                >
+                  <MenuItem disabled>
+                    <Typography variant="caption" color="text.secondary">
+                      {currentEmail}
+                    </Typography>
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout}>
+                    <LogoutIcon sx={{ mr: 1, fontSize: 20 }} />
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
+          </Box>
+        </Toolbar>
+      </Container>
+    </AppBar>
   )
 }
