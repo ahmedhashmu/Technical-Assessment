@@ -14,10 +14,6 @@ import {
   CircularProgress,
   Button,
   Alert,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Chip,
 } from '@mui/material'
 import {
@@ -27,8 +23,6 @@ import {
   Person as BasicIcon,
 } from '@mui/icons-material'
 
-type UserRole = 'operator' | 'basic'
-
 export default function ContactPage() {
   const params = useParams()
   const contactId = params.id as string
@@ -36,13 +30,13 @@ export default function ContactPage() {
   const [meetings, setMeetings] = useState<MeetingWithAnalysis[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [userRole, setUserRole] = useState<UserRole>('operator')
+  const [userRole, setUserRole] = useState<'operator' | 'basic' | null>(null)
 
-  const fetchMeetings = async (role: UserRole) => {
+  const fetchMeetings = async () => {
     try {
       setLoading(true)
       setError(null)
-      const data = await apiClient.getContactMeetings(contactId, role)
+      const data = await apiClient.getContactMeetings(contactId)
       setMeetings(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load meetings')
@@ -52,15 +46,17 @@ export default function ContactPage() {
   }
 
   useEffect(() => {
-    fetchMeetings(userRole)
-  }, [contactId, userRole])
+    // Get current user role
+    const role = apiClient.getCurrentRole()
+    setUserRole(role)
+    
+    if (role) {
+      fetchMeetings()
+    }
+  }, [contactId])
 
   const handleAnalyze = () => {
-    fetchMeetings(userRole)
-  }
-
-  const handleRoleChange = (newRole: UserRole) => {
-    setUserRole(newRole)
+    fetchMeetings()
   }
 
   if (loading) {
@@ -104,7 +100,7 @@ export default function ContactPage() {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             {error}
           </Typography>
-          <Button variant="contained" onClick={() => fetchMeetings(userRole)} fullWidth>
+          <Button variant="contained" onClick={fetchMeetings} fullWidth>
             Try Again
           </Button>
         </Paper>
@@ -142,38 +138,16 @@ export default function ContactPage() {
           </Stack>
         </Box>
 
-        {/* Role Selector */}
+        {/* Access Level Info */}
         <Paper elevation={2} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
           <Stack direction="row" spacing={3} alignItems="center">
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>User Role</InputLabel>
-              <Select
-                value={userRole}
-                label="User Role"
-                onChange={(e) => handleRoleChange(e.target.value as UserRole)}
-              >
-                <MenuItem value="operator">
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <OperatorIcon fontSize="small" />
-                    <span>Operator (Admin)</span>
-                  </Stack>
-                </MenuItem>
-                <MenuItem value="basic">
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <BasicIcon fontSize="small" />
-                    <span>Basic User</span>
-                  </Stack>
-                </MenuItem>
-              </Select>
-            </FormControl>
-
             <Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                Current Access Level:
+                Your Access Level:
               </Typography>
               <Chip
                 icon={userRole === 'operator' ? <OperatorIcon /> : <BasicIcon />}
-                label={userRole === 'operator' ? 'Full Access' : 'Limited Access'}
+                label={userRole === 'operator' ? 'Operator - Full Access' : 'Basic User - Limited Access'}
                 color={userRole === 'operator' ? 'success' : 'warning'}
               />
             </Box>
@@ -211,7 +185,7 @@ export default function ContactPage() {
                 key={meeting.id}
                 meeting={meeting}
                 onAnalyze={handleAnalyze}
-                userRole={userRole}
+                userRole={userRole || 'basic'}
               />
             ))}
           </Stack>

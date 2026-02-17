@@ -1,79 +1,151 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import Container from '@mui/material/Container'
 import Box from '@mui/material/Box'
+import Chip from '@mui/material/Chip'
+import IconButton from '@mui/material/IconButton'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
 import Link from 'next/link'
 import PsychologyIcon from '@mui/icons-material/Psychology'
 import AddIcon from '@mui/icons-material/Add'
 import PeopleIcon from '@mui/icons-material/People'
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
+import PersonIcon from '@mui/icons-material/Person'
+import LogoutIcon from '@mui/icons-material/Logout'
+import AccountCircleIcon from '@mui/icons-material/AccountCircle'
+import { apiClient } from '@/lib/api-client'
+import LoginSelector from './LoginSelector'
 
 export default function Navbar() {
+  const [currentRole, setCurrentRole] = useState<'operator' | 'basic' | null>(null)
+  const [showLogin, setShowLogin] = useState(false)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+
+  useEffect(() => {
+    // Check authentication status on mount
+    const role = apiClient.getCurrentRole()
+    setCurrentRole(role)
+    
+    if (!role) {
+      setShowLogin(true)
+    }
+  }, [])
+
+  const handleLogout = () => {
+    apiClient.clearToken()
+    setCurrentRole(null)
+    setAnchorEl(null)
+    setShowLogin(true)
+  }
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleMenuClose = () => {
+    setAnchorEl(null)
+  }
+
   return (
-    <AppBar position="sticky" color="default" elevation={1} sx={{ bgcolor: 'background.paper' }}>
-      <Container maxWidth="xl">
-        <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-          {/* Logo */}
-          <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box
+    <>
+      <AppBar position="sticky" color="default" elevation={1} sx={{ bgcolor: 'background.paper' }}>
+        <Container maxWidth="xl">
+          <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+            {/* Logo */}
+            <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box
+                  sx={{
+                    background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                    borderRadius: 2,
+                    p: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <PsychologyIcon sx={{ color: 'white', fontSize: 28 }} />
+                </Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  TruthOS
+                </Typography>
+              </Box>
+            </Link>
+
+            {/* Navigation */}
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Button
+                component={Link}
+                href="/meetings/new"
+                variant="contained"
+                startIcon={<AddIcon />}
                 sx={{
                   background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
-                  borderRadius: 2,
-                  p: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #0284c7 0%, #075985 100%)',
+                  },
                 }}
               >
-                <PsychologyIcon sx={{ color: 'white', fontSize: 28 }} />
-              </Box>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 700,
-                  background: 'linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
+                New Meeting
+              </Button>
+              
+              <Button
+                component={Link}
+                href="/contacts"
+                variant="outlined"
+                startIcon={<PeopleIcon />}
               >
-                TruthOS
-              </Typography>
-            </Box>
-          </Link>
+                Contacts
+              </Button>
 
-          {/* Navigation */}
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button
-              component={Link}
-              href="/meetings/new"
-              variant="contained"
-              startIcon={<AddIcon />}
-              sx={{
-                background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #0284c7 0%, #075985 100%)',
-                },
-              }}
-            >
-              New Meeting
-            </Button>
-            
-            <Button
-              component={Link}
-              href="/contacts"
-              variant="outlined"
-              startIcon={<PeopleIcon />}
-            >
-              Contacts
-            </Button>
-          </Box>
-        </Toolbar>
-      </Container>
-    </AppBar>
+              {/* User Role Display */}
+              {currentRole && (
+                <>
+                  <Chip
+                    icon={currentRole === 'operator' ? <AdminPanelSettingsIcon /> : <PersonIcon />}
+                    label={currentRole === 'operator' ? 'Operator' : 'Basic User'}
+                    color={currentRole === 'operator' ? 'success' : 'warning'}
+                    size="small"
+                  />
+                  
+                  <IconButton onClick={handleMenuOpen} size="small">
+                    <AccountCircleIcon />
+                  </IconButton>
+                  
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem onClick={handleLogout}>
+                      <LogoutIcon sx={{ mr: 1, fontSize: 20 }} />
+                      Logout
+                    </MenuItem>
+                  </Menu>
+                </>
+              )}
+            </Box>
+          </Toolbar>
+        </Container>
+      </AppBar>
+
+      {/* Login Modal */}
+      <LoginSelector open={showLogin} onClose={() => setShowLogin(false)} />
+    </>
   )
 }
