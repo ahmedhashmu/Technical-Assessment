@@ -9,17 +9,17 @@ export async function GET(
   try {
     const contactId = params.id
     
-    // Extract role header from incoming request
-    const userRole = request.headers.get('x-user-role')
+    // Extract Authorization header from incoming request
+    const authHeader = request.headers.get('authorization')
     
     // Build headers for backend request
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     }
     
-    // Forward role header if present
-    if (userRole) {
-      headers['x-user-role'] = userRole
+    // Forward Authorization header if present
+    if (authHeader) {
+      headers['Authorization'] = authHeader
     }
     
     const response = await fetch(`${BACKEND_URL}/api/contacts/${contactId}/meetings`, {

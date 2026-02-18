@@ -14,10 +14,6 @@ import {
   CircularProgress,
   Button,
   Alert,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Chip,
 } from '@mui/material'
 import {
@@ -36,13 +32,13 @@ export default function ContactPage() {
   const [meetings, setMeetings] = useState<MeetingWithAnalysis[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [userRole, setUserRole] = useState<UserRole>('operator')
+  const [userRole, setUserRole] = useState<UserRole | null>(null)
 
-  const fetchMeetings = async (role: UserRole) => {
+  const fetchMeetings = async () => {
     try {
       setLoading(true)
       setError(null)
-      const data = await apiClient.getContactMeetings(contactId, role)
+      const data = await apiClient.getContactMeetings(contactId)
       setMeetings(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load meetings')
@@ -52,15 +48,14 @@ export default function ContactPage() {
   }
 
   useEffect(() => {
-    fetchMeetings(userRole)
-  }, [contactId, userRole])
+    // Get user role from localStorage
+    const role = apiClient.getCurrentRole()
+    setUserRole(role)
+    fetchMeetings()
+  }, [contactId])
 
   const handleAnalyze = () => {
-    fetchMeetings(userRole)
-  }
-
-  const handleRoleChange = (newRole: UserRole) => {
-    setUserRole(newRole)
+    fetchMeetings()
   }
 
   if (loading) {
@@ -104,7 +99,7 @@ export default function ContactPage() {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             {error}
           </Typography>
-          <Button variant="contained" onClick={() => fetchMeetings(userRole)} fullWidth>
+          <Button variant="contained" onClick={() => fetchMeetings()} fullWidth>
             Try Again
           </Button>
         </Paper>
@@ -139,56 +134,27 @@ export default function ContactPage() {
                 {meetings.length} {meetings.length === 1 ? 'meeting' : 'meetings'} found
               </Typography>
             </Box>
-          </Stack>
-        </Box>
-
-        {/* Role Selector */}
-        <Paper elevation={2} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
-          <Stack direction="row" spacing={3} alignItems="center">
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>User Role</InputLabel>
-              <Select
-                value={userRole}
-                label="User Role"
-                onChange={(e) => handleRoleChange(e.target.value as UserRole)}
-              >
-                <MenuItem value="operator">
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <OperatorIcon fontSize="small" />
-                    <span>Operator (Admin)</span>
-                  </Stack>
-                </MenuItem>
-                <MenuItem value="basic">
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <BasicIcon fontSize="small" />
-                    <span>Basic User</span>
-                  </Stack>
-                </MenuItem>
-              </Select>
-            </FormControl>
-
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                Current Access Level:
-              </Typography>
+            {userRole && (
               <Chip
                 icon={userRole === 'operator' ? <OperatorIcon /> : <BasicIcon />}
-                label={userRole === 'operator' ? 'Full Access' : 'Limited Access'}
+                label={userRole === 'operator' ? 'Operator Access' : 'Basic Access'}
                 color={userRole === 'operator' ? 'success' : 'warning'}
+                sx={{ px: 1 }}
               />
-            </Box>
-
-            <Box sx={{ flex: 1 }}>
-              <Alert severity={userRole === 'operator' ? 'info' : 'warning'} sx={{ borderRadius: 2 }}>
-                <Typography variant="body2">
-                  {userRole === 'operator' 
-                    ? '✓ You can see full transcripts and AI analysis'
-                    : '⚠ You can only see meeting metadata (no transcripts or analysis)'}
-                </Typography>
-              </Alert>
-            </Box>
+            )}
           </Stack>
-        </Paper>
+
+          {/* Role Info Alert */}
+          {userRole && (
+            <Alert severity={userRole === 'operator' ? 'info' : 'warning'} sx={{ borderRadius: 2 }}>
+              <Typography variant="body2">
+                {userRole === 'operator' 
+                  ? '✓ You have full access - viewing transcripts and AI analysis'
+                  : '⚠ You have limited access - viewing meeting metadata only (no transcripts or analysis)'}
+              </Typography>
+            </Alert>
+          )}
+        </Box>
 
         {/* Meetings List */}
         {meetings.length === 0 ? (

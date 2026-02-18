@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: truthos-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: JWT_SECRET
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: truthos-db
+          property: connectionString
+
+databases:
+  - name: truthos-db
+    plan: free
+    databaseName: truthos
+    user: truthos
