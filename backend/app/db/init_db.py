@@ -1,11 +1,12 @@
 """Database initialization script."""
 from sqlalchemy import text
-from app.db.database import engine, Base
+from app.db.database import get_engine, Base
 from app.models import Meeting, MeetingAnalysis, Contact
 
 
 def create_immutability_triggers():
     """Create database triggers to enforce immutability on meetings table."""
+    engine = get_engine()
 
     # For PostgreSQL - execute as single statements
     statements = [
@@ -54,6 +55,8 @@ def create_immutability_triggers():
 
 def init_db():
     """Initialize database schema and triggers."""
+    engine = get_engine()
+    
     print("Creating database tables...")
     Base.metadata.create_all(bind=engine)
     print("✓ Tables created")
