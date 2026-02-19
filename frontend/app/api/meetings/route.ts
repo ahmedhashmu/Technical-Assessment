@@ -6,11 +6,21 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
+    // Get Authorization header from the incoming request
+    const authHeader = request.headers.get('Authorization')
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    
+    // Forward Authorization header to backend
+    if (authHeader) {
+      headers['Authorization'] = authHeader
+    }
+    
     const response = await fetch(`${BACKEND_URL}/api/meetings`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(body),
     })
 

@@ -9,11 +9,21 @@ export async function POST(
   try {
     const meetingId = params.id
     
+    // Get Authorization header from the incoming request
+    const authHeader = request.headers.get('Authorization')
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    
+    // Forward Authorization header to backend
+    if (authHeader) {
+      headers['Authorization'] = authHeader
+    }
+    
     const response = await fetch(`${BACKEND_URL}/api/meetings/${meetingId}/analyze`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
     })
 
     const data = await response.json()
