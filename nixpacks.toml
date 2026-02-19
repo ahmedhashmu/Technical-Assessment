@@ -3,8 +3,8 @@ nixPkgs = ["python311", "postgresql"]
 
 [phases.install]
 cmds = [
-  "chmod +x build.sh",
-  "./build.sh"
+  "python -m pip install --upgrade pip",
+  "cd backend && python -m pip install --no-cache-dir -r requirements.txt"
 ]
 
 [phases.start]
