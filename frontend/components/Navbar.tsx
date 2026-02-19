@@ -36,32 +36,17 @@ export default function Navbar() {
     
     // Small delay to ensure localStorage is ready after login redirect
     const timer = setTimeout(() => {
-      // Check authentication status
-      const isAuth = apiClient.isAuthenticated()
-      
-      if (!isAuth) {
-        router.push('/login')
-        return
-      }
-      
       // Load user data from localStorage
       const role = apiClient.getCurrentRole()
       const email = apiClient.getCurrentEmail()
       
-      console.log('Navbar: Loading auth state', { role, email, isAuth })
+      console.log('Navbar: Loading auth state', { role, email })
       
       setCurrentRole(role)
       setCurrentEmail(email)
-      
-      // If no role/email but token exists, redirect to login
-      if (!role || !email) {
-        console.log('Navbar: Missing role or email, redirecting to login')
-        router.push('/login')
-      }
     }, 100) // 100ms delay to ensure localStorage is populated
     
     return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Only run on mount
 
   const handleLogout = () => {
