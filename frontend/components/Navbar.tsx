@@ -31,27 +31,36 @@ export default function Navbar() {
 
   // Handle client-side mounting
   useEffect(() => {
+    // Mark as mounted
     setMounted(true)
     
-    // Check authentication status
-    const isAuth = apiClient.isAuthenticated()
+    // Small delay to ensure localStorage is ready after login redirect
+    const timer = setTimeout(() => {
+      // Check authentication status
+      const isAuth = apiClient.isAuthenticated()
+      
+      if (!isAuth) {
+        router.push('/login')
+        return
+      }
+      
+      // Load user data from localStorage
+      const role = apiClient.getCurrentRole()
+      const email = apiClient.getCurrentEmail()
+      
+      console.log('Navbar: Loading auth state', { role, email, isAuth })
+      
+      setCurrentRole(role)
+      setCurrentEmail(email)
+      
+      // If no role/email but token exists, redirect to login
+      if (!role || !email) {
+        console.log('Navbar: Missing role or email, redirecting to login')
+        router.push('/login')
+      }
+    }, 100) // 100ms delay to ensure localStorage is populated
     
-    if (!isAuth) {
-      router.push('/login')
-      return
-    }
-    
-    // Load user data from localStorage
-    const role = apiClient.getCurrentRole()
-    const email = apiClient.getCurrentEmail()
-    
-    setCurrentRole(role)
-    setCurrentEmail(email)
-    
-    // If no role/email but token exists, redirect to login
-    if (!role || !email) {
-      router.push('/login')
-    }
+    return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Only run on mount
 
