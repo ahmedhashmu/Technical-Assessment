@@ -24,30 +24,22 @@ import { apiClient } from '@/lib/api-client'
 
 export default function Navbar() {
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
   const [currentRole, setCurrentRole] = useState<'operator' | 'basic' | null>(null)
   const [currentEmail, setCurrentEmail] = useState<string | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
-  // Handle client-side mounting
   useEffect(() => {
-    // Mark as mounted
-    setMounted(true)
+    // Check authentication status on mount
+    const role = apiClient.getCurrentRole()
+    const email = apiClient.getCurrentEmail()
+    setCurrentRole(role)
+    setCurrentEmail(email)
     
-    // Small delay to ensure localStorage is ready after login redirect
-    const timer = setTimeout(() => {
-      // Load user data from localStorage
-      const role = apiClient.getCurrentRole()
-      const email = apiClient.getCurrentEmail()
-      
-      console.log('Navbar: Loading auth state', { role, email })
-      
-      setCurrentRole(role)
-      setCurrentEmail(email)
-    }, 100) // 100ms delay to ensure localStorage is populated
-    
-    return () => clearTimeout(timer)
-  }, []) // Only run on mount
+    // Redirect to login if not authenticated
+    if (!role) {
+      router.push('/login')
+    }
+  }, [router])
 
   const handleLogout = () => {
     apiClient.clearToken()
@@ -125,8 +117,8 @@ export default function Navbar() {
               Contacts
             </Button>
 
-            {/* User Role Display - Only render on client after mount */}
-            {mounted && currentRole && (
+            {/* User Role Display */}
+            {currentRole && (
               <>
                 <Chip
                   icon={currentRole === 'operator' ? <AdminPanelSettingsIcon /> : <PersonIcon />}
