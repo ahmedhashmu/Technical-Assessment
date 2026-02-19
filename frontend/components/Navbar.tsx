@@ -26,17 +26,34 @@ export default function Navbar() {
   const router = useRouter()
   const [currentRole, setCurrentRole] = useState<'operator' | 'basic' | null>(null)
   const [currentEmail, setCurrentEmail] = useState<string | null>(null)
+  const [authStatus, setAuthStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading')
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   useEffect(() => {
     // Check authentication status on mount
+    const isAuth = apiClient.isAuthenticated()
+    
+    if (!isAuth) {
+      // No authentication token found
+      setAuthStatus('unauthenticated')
+      router.push('/login')
+      return
+    }
+    
+    // Load user data from localStorage
     const role = apiClient.getCurrentRole()
     const email = apiClient.getCurrentEmail()
+    
+    // Set role and email first
     setCurrentRole(role)
     setCurrentEmail(email)
     
-    // Redirect to login if not authenticated
-    if (!role) {
+    // Then set authStatus to authenticated to trigger button rendering
+    if (role && email) {
+      setAuthStatus('authenticated')
+    } else {
+      // Token exists but role/email missing - treat as unauthenticated
+      setAuthStatus('unauthenticated')
       router.push('/login')
     }
   }, [router])
@@ -118,7 +135,7 @@ export default function Navbar() {
             </Button>
 
             {/* User Role Display */}
-            {currentRole && (
+            {authStatus === 'authenticated' && currentRole && (
               <>
                 <Chip
                   icon={currentRole === 'operator' ? <AdminPanelSettingsIcon /> : <PersonIcon />}
