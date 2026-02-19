@@ -141,17 +141,15 @@ export default function MeetingCard({ meeting, onAnalyze, userRole = 'operator' 
             </Stack>
           </Box>
           
-          {!meeting.analysis && (
-            <Button
-              variant="contained"
-              startIcon={analyzing ? <CircularProgress size={16} color="inherit" /> : <BrainIcon />}
-              onClick={handleAnalyze}
-              disabled={analyzing}
-              size="small"
-            >
-              {analyzing ? 'Analyzing...' : 'Analyze'}
-            </Button>
-          )}
+          <Button
+            variant={meeting.analysis ? "outlined" : "contained"}
+            startIcon={analyzing ? <CircularProgress size={16} color="inherit" /> : <BrainIcon />}
+            onClick={handleAnalyze}
+            disabled={analyzing}
+            size="small"
+          >
+            {analyzing ? 'Analyzing...' : (meeting.analysis ? 'Re-analyze' : 'Analyze')}
+          </Button>
         </Box>
 
         {/* Transcript Preview */}
