@@ -30,7 +30,7 @@ export default function Navbar() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   useEffect(() => {
-    // Check authentication status on mount
+    // Check authentication status only on mount
     const isAuth = apiClient.isAuthenticated()
     
     if (!isAuth) {
@@ -44,11 +44,11 @@ export default function Navbar() {
     const role = apiClient.getCurrentRole()
     const email = apiClient.getCurrentEmail()
     
-    // Set role and email first
+    // Set role and email
     setCurrentRole(role)
     setCurrentEmail(email)
     
-    // Then set authStatus to authenticated to trigger button rendering
+    // Set authStatus to authenticated if we have valid role and email
     if (role && email) {
       setAuthStatus('authenticated')
     } else {
@@ -56,12 +56,14 @@ export default function Navbar() {
       setAuthStatus('unauthenticated')
       router.push('/login')
     }
-  }, [router])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run on mount, not on route changes
 
   const handleLogout = () => {
     apiClient.clearToken()
     setCurrentRole(null)
     setCurrentEmail(null)
+    setAuthStatus('unauthenticated')
     setAnchorEl(null)
     router.push('/login')
   }
