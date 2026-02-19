@@ -23,6 +23,9 @@ wheels/
 .installed.cfg
 *.egg
 
+# But don't ignore frontend lib
+!frontend/lib/
+
 # Node
 node_modules/
 npm-debug.log*
