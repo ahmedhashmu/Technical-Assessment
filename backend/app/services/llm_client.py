@@ -14,14 +14,26 @@ class LLMClient:
         self.provider = settings.LLM_PROVIDER
         self.model = settings.LLM_MODEL
         
+        print(f"Initializing LLM Client - Provider: {self.provider}, Model: {self.model}")
+        
         if self.provider == "openai":
             from openai import OpenAI
-            self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+            api_key = settings.OPENAI_API_KEY
+            if not api_key:
+                print("ERROR: OPENAI_API_KEY is not set!")
+            else:
+                print(f"OpenAI API Key loaded: {api_key[:10]}...{api_key[-4:]}")
+            self.client = OpenAI(api_key=api_key)
         elif self.provider == "xai":
             from openai import OpenAI
+            api_key = settings.XAI_API_KEY
+            if not api_key:
+                print("ERROR: XAI_API_KEY is not set!")
+            else:
+                print(f"xAI API Key loaded: {api_key[:10]}...{api_key[-4:]}")
             # xAI uses OpenAI-compatible API
             self.client = OpenAI(
-                api_key=settings.XAI_API_KEY,
+                api_key=api_key,
                 base_url="https://api.x.ai/v1"
             )
         else:
@@ -84,12 +96,15 @@ class LLMClient:
                     return self._generate_demo_analysis(transcript)
             
             except Exception as e:
-                print(f"LLM API error on attempt {attempt + 1}: {str(e)[:200]}")
+                error_msg = str(e)
+                print(f"LLM API error on attempt {attempt + 1}: {error_msg}")
+                print(f"Error type: {type(e).__name__}")
                 if attempt < max_retries - 1:
                     time.sleep(2 ** attempt)
                     continue
                 else:
                     print(f"All retries exhausted, falling back to demo mode")
+                    print(f"Final error was: {error_msg}")
                     # Fallback to demo mode
                     return self._generate_demo_analysis(transcript)
     
