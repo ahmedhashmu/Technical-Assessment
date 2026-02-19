@@ -24,18 +24,19 @@ import { apiClient } from '@/lib/api-client'
 
 export default function Navbar() {
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
   const [currentRole, setCurrentRole] = useState<'operator' | 'basic' | null>(null)
   const [currentEmail, setCurrentEmail] = useState<string | null>(null)
-  const [authStatus, setAuthStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading')
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
+  // Handle client-side mounting
   useEffect(() => {
-    // Check authentication status only on mount
+    setMounted(true)
+    
+    // Check authentication status
     const isAuth = apiClient.isAuthenticated()
     
     if (!isAuth) {
-      // No authentication token found
-      setAuthStatus('unauthenticated')
       router.push('/login')
       return
     }
@@ -44,26 +45,20 @@ export default function Navbar() {
     const role = apiClient.getCurrentRole()
     const email = apiClient.getCurrentEmail()
     
-    // Set role and email
     setCurrentRole(role)
     setCurrentEmail(email)
     
-    // Set authStatus to authenticated if we have valid role and email
-    if (role && email) {
-      setAuthStatus('authenticated')
-    } else {
-      // Token exists but role/email missing - treat as unauthenticated
-      setAuthStatus('unauthenticated')
+    // If no role/email but token exists, redirect to login
+    if (!role || !email) {
       router.push('/login')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Only run on mount, not on route changes
+  }, []) // Only run on mount
 
   const handleLogout = () => {
     apiClient.clearToken()
     setCurrentRole(null)
     setCurrentEmail(null)
-    setAuthStatus('unauthenticated')
     setAnchorEl(null)
     router.push('/login')
   }
@@ -136,8 +131,8 @@ export default function Navbar() {
               Contacts
             </Button>
 
-            {/* User Role Display */}
-            {authStatus === 'authenticated' && currentRole && (
+            {/* User Role Display - Only render on client after mount */}
+            {mounted && currentRole && (
               <>
                 <Chip
                   icon={currentRole === 'operator' ? <AdminPanelSettingsIcon /> : <PersonIcon />}
