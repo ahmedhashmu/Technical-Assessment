@@ -13,7 +13,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+backend/lib/
 lib64/
 parts/
 sdist/
@@ -22,9 +22,6 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
-# But don't ignore frontend lib
-!frontend/lib/
 
 # Node
 node_modules/

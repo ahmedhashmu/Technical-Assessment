@@ -177,7 +177,7 @@ export default function ContactPage() {
                 key={meeting.id}
                 meeting={meeting}
                 onAnalyze={handleAnalyze}
-                userRole={userRole}
+                userRole={userRole ?? undefined}
               />
             ))}
           </Stack>
