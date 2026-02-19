@@ -5,6 +5,7 @@ from typing import Dict, Any
 from app.core.config import settings
 from app.models.schemas import AnalysisSignals
 from pydantic import ValidationError
+import httpx
 
 
 class LLMClient:
@@ -16,6 +17,13 @@ class LLMClient:
         
         print(f"Initializing LLM Client - Provider: {self.provider}, Model: {self.model}")
         
+        # Create httpx client with longer timeout and retry settings
+        http_client = httpx.Client(
+            timeout=httpx.Timeout(60.0, connect=10.0),
+            limits=httpx.Limits(max_connections=10, max_keepalive_connections=5),
+            follow_redirects=True
+        )
+        
         if self.provider == "openai":
             from openai import OpenAI
             api_key = settings.OPENAI_API_KEY
@@ -23,7 +31,7 @@ class LLMClient:
                 print("ERROR: OPENAI_API_KEY is not set!")
             else:
                 print(f"OpenAI API Key loaded: {api_key[:10]}...{api_key[-4:]}")
-            self.client = OpenAI(api_key=api_key)
+            self.client = OpenAI(api_key=api_key, http_client=http_client)
         elif self.provider == "xai":
             from openai import OpenAI
             api_key = settings.XAI_API_KEY
@@ -34,7 +42,8 @@ class LLMClient:
             # xAI uses OpenAI-compatible API
             self.client = OpenAI(
                 api_key=api_key,
-                base_url="https://api.x.ai/v1"
+                base_url="https://api.x.ai/v1",
+                http_client=http_client
             )
         else:
             raise ValueError(f"Unsupported LLM provider: {self.provider}")
@@ -97,10 +106,19 @@ class LLMClient:
             
             except Exception as e:
                 error_msg = str(e)
+                error_type = type(e).__name__
                 print(f"LLM API error on attempt {attempt + 1}: {error_msg}")
-                print(f"Error type: {type(e).__name__}")
+                print(f"Error type: {error_type}")
+                
+                # Check if it's a connection error and add more wait time
+                if "Connection" in error_type or "Timeout" in error_type:
+                    wait_time = 2 ** (attempt + 1)  # Longer backoff for connection errors
+                    print(f"Connection issue detected, waiting {wait_time}s before retry...")
+                else:
+                    wait_time = 2 ** attempt
+                
                 if attempt < max_retries - 1:
-                    time.sleep(2 ** attempt)
+                    time.sleep(wait_time)
                     continue
                 else:
                     print(f"All retries exhausted, falling back to demo mode")
