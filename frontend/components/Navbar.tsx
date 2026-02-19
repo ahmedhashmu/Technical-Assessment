@@ -27,9 +27,13 @@ export default function Navbar() {
   const [currentRole, setCurrentRole] = useState<'operator' | 'basic' | null>(null)
   const [currentEmail, setCurrentEmail] = useState<string | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    // Check authentication status on mount
+    // Mark as client-side rendered
+    setIsClient(true)
+    
+    // Check authentication status on mount only
     const role = apiClient.getCurrentRole()
     const email = apiClient.getCurrentEmail()
     setCurrentRole(role)
@@ -39,7 +43,7 @@ export default function Navbar() {
     if (!role) {
       router.push('/login')
     }
-  }, [router])
+  }, []) // Empty dependency array - only run once on mount
 
   const handleLogout = () => {
     apiClient.clearToken()
@@ -117,8 +121,8 @@ export default function Navbar() {
               Contacts
             </Button>
 
-            {/* User Role Display */}
-            {currentRole && (
+            {/* User Role Display - only show after client-side hydration */}
+            {isClient && currentRole && (
               <>
                 <Chip
                   icon={currentRole === 'operator' ? <AdminPanelSettingsIcon /> : <PersonIcon />}
