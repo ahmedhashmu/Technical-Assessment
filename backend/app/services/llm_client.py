@@ -1,6 +1,7 @@
 """LLM client for bounded agent analysis."""
 import json
 import time
+import os
 from typing import Dict, Any
 from app.core.config import settings
 from app.models.schemas import AnalysisSignals
@@ -17,36 +18,47 @@ class LLMClient:
         
         print(f"Initializing LLM Client - Provider: {self.provider}, Model: {self.model}")
         
-        # Create httpx client with longer timeout and retry settings
-        http_client = httpx.Client(
-            timeout=httpx.Timeout(60.0, connect=10.0),
-            limits=httpx.Limits(max_connections=10, max_keepalive_connections=5),
-            follow_redirects=True
-        )
+        # Use frontend API proxy to bypass Railway network restrictions
+        self.use_frontend_proxy = os.getenv("USE_FRONTEND_LLM_PROXY", "false").lower() == "true"
+        self.frontend_url = os.getenv("FRONTEND_URL", "")
         
-        if self.provider == "openai":
-            from openai import OpenAI
-            api_key = settings.OPENAI_API_KEY
-            if not api_key:
-                print("ERROR: OPENAI_API_KEY is not set!")
-            else:
-                print(f"OpenAI API Key loaded: {api_key[:10]}...{api_key[-4:]}")
-            self.client = OpenAI(api_key=api_key, http_client=http_client)
-        elif self.provider == "xai":
-            from openai import OpenAI
-            api_key = settings.XAI_API_KEY
-            if not api_key:
-                print("ERROR: XAI_API_KEY is not set!")
-            else:
-                print(f"xAI API Key loaded: {api_key[:10]}...{api_key[-4:]}")
-            # xAI uses OpenAI-compatible API
-            self.client = OpenAI(
-                api_key=api_key,
-                base_url="https://api.x.ai/v1",
-                http_client=http_client
+        if self.use_frontend_proxy:
+            print(f"Using frontend LLM proxy at: {self.frontend_url}")
+            self.http_client = httpx.Client(
+                timeout=httpx.Timeout(60.0, connect=10.0),
+                follow_redirects=True
             )
         else:
-            raise ValueError(f"Unsupported LLM provider: {self.provider}")
+            # Original OpenAI/xAI client setup
+            http_client = httpx.Client(
+                timeout=httpx.Timeout(60.0, connect=10.0),
+                limits=httpx.Limits(max_connections=10, max_keepalive_connections=5),
+                follow_redirects=True
+            )
+            
+            if self.provider == "openai":
+                from openai import OpenAI
+                api_key = settings.OPENAI_API_KEY
+                if not api_key:
+                    print("ERROR: OPENAI_API_KEY is not set!")
+                else:
+                    print(f"OpenAI API Key loaded: {api_key[:10]}...{api_key[-4:]}")
+                self.client = OpenAI(api_key=api_key, http_client=http_client)
+            elif self.provider == "xai":
+                from openai import OpenAI
+                api_key = settings.XAI_API_KEY
+                if not api_key:
+                    print("ERROR: XAI_API_KEY is not set!")
+                else:
+                    print(f"xAI API Key loaded: {api_key[:10]}...{api_key[-4:]}")
+                # xAI uses OpenAI-compatible API
+                self.client = OpenAI(
+                    api_key=api_key,
+                    base_url="https://api.x.ai/v1",
+                    http_client=http_client
+                )
+            else:
+                raise ValueError(f"Unsupported LLM provider: {self.provider}")
     
     def extract_signals(self, transcript: str, max_retries: int = 3) -> AnalysisSignals:
         """
@@ -62,6 +74,11 @@ class LLMClient:
         Raises:
             Exception: If all retries fail
         """
+        # Use frontend proxy if enabled
+        if self.use_frontend_proxy:
+            return self._extract_via_frontend_proxy(transcript, max_retries)
+        
+        # Original OpenAI/xAI logic
         prompt = self._build_prompt(transcript)
         
         for attempt in range(max_retries):
@@ -125,6 +142,36 @@ class LLMClient:
                     print(f"Final error was: {error_msg}")
                     # Fallback to demo mode
                     return self._generate_demo_analysis(transcript)
+    
+    def _extract_via_frontend_proxy(self, transcript: str, max_retries: int = 3) -> AnalysisSignals:
+        """Extract signals by calling frontend LLM proxy API."""
+        for attempt in range(max_retries):
+            try:
+                print(f"Calling frontend LLM proxy (attempt {attempt + 1}/{max_retries})...")
+                
+                response = self.http_client.post(
+                    f"{self.frontend_url}/api/llm/analyze",
+                    json={"transcript": transcript},
+                    timeout=60.0
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    signals = AnalysisSignals(**data)
+                    print(f"✓ LLM analysis completed via frontend proxy")
+                    return signals
+                else:
+                    print(f"Frontend proxy error: {response.status_code} - {response.text}")
+                    
+            except Exception as e:
+                print(f"Frontend proxy error on attempt {attempt + 1}: {str(e)}")
+                
+            if attempt < max_retries - 1:
+                time.sleep(2 ** attempt)
+                continue
+        
+        print(f"All frontend proxy attempts failed, falling back to demo mode")
+        return self._generate_demo_analysis(transcript)
     
     def _generate_demo_analysis(self, transcript: str) -> AnalysisSignals:
         """Generate demo analysis when LLM is unavailable."""
