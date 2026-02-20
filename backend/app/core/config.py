@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     
     # LLM Configuration
     LLM_PROVIDER: Literal["openai", "xai"] = "openai"
-    LLM_MODEL: str = "gpt-4"
+    LLM_MODEL: str = "gpt-4o-mini"
     OPENAI_API_KEY: str | None = None
     XAI_API_KEY: str | None = None
     
