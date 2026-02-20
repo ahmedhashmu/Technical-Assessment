@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
+// LLM Analysis API Route - Fixed model to gpt-3.5-turbo
 // Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -46,6 +47,8 @@ Respond only with valid JSON, no additional text.`
     // Call OpenAI API
     // Force gpt-3.5-turbo model (ignore potentially corrupted env var)
     const model = 'gpt-3.5-turbo'
+    console.log('DEBUG: Using model:', model)
+    console.log('DEBUG: LLM_MODEL env var:', process.env.LLM_MODEL)
     const response = await openai.chat.completions.create({
       model: model,
       messages: [
