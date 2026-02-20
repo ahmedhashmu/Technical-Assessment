@@ -156,7 +156,7 @@ class LLMClient:
                 print(f"Calling frontend LLM proxy (attempt {attempt + 1}/{max_retries})...")
                 
                 response = self.http_client.post(
-                    f"{self.frontend_url}/api/llm/analyze",
+                    f"{self.frontend_url}/api/analyze-meeting",
                     json={"transcript": transcript},
                     timeout=60.0
                 )
