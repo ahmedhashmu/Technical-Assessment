@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
-// LLM Analysis API Route - Fixed model to gpt-3.5-turbo
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
+// LLM Analysis API Route - Proxy for Railway backend
 export async function POST(request: NextRequest) {
   try {
     const { transcript } = await request.json()
@@ -17,6 +12,14 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Initialize OpenAI with API key from environment
+    const apiKey = process.env.OPENAI_API_KEY
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY not configured')
+    }
+
+    const openai = new OpenAI({ apiKey })
 
     // Build prompt for OpenAI
     const prompt = `Analyze the following meeting transcript and extract structured information.
@@ -44,13 +47,9 @@ ${transcript}
 
 Respond only with valid JSON, no additional text.`
 
-    // Call OpenAI API
-    // Force gpt-3.5-turbo model (ignore potentially corrupted env var)
-    const model = 'gpt-3.5-turbo'
-    console.log('DEBUG: Using model:', model)
-    console.log('DEBUG: LLM_MODEL env var:', process.env.LLM_MODEL)
+    // Call OpenAI API with hardcoded model
     const response = await openai.chat.completions.create({
-      model: model,
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',

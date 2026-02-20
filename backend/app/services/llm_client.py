@@ -19,7 +19,7 @@ class LLMClient:
         print(f"Initializing LLM Client - Provider: {self.provider}, Model: {self.model}")
         
         # Use frontend API proxy to bypass Railway network restrictions
-        self.use_frontend_proxy = False  # DISABLED - Use direct OpenAI with Railway Pro
+        self.use_frontend_proxy = os.getenv("USE_FRONTEND_LLM_PROXY", "false").lower() == "true"
         # Clean the URL - remove any whitespace, newlines, or non-printable characters
         self.frontend_url = os.getenv("FRONTEND_URL", "").strip().replace('\n', '').replace('\r', '').replace('\t', '')
         
