@@ -20,7 +20,8 @@ class LLMClient:
         
         # Use frontend API proxy to bypass Railway network restrictions
         self.use_frontend_proxy = os.getenv("USE_FRONTEND_LLM_PROXY", "false").lower() == "true"
-        self.frontend_url = os.getenv("FRONTEND_URL", "")
+        # Clean the URL - remove any whitespace, newlines, or non-printable characters
+        self.frontend_url = os.getenv("FRONTEND_URL", "").strip().replace('\n', '').replace('\r', '').replace('\t', '')
         
         if self.use_frontend_proxy:
             print(f"Using frontend LLM proxy at: {self.frontend_url}")
