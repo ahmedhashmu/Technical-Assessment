@@ -44,8 +44,10 @@ ${transcript}
 Respond only with valid JSON, no additional text.`
 
     // Call OpenAI API
+    // Force gpt-3.5-turbo model (ignore potentially corrupted env var)
+    const model = 'gpt-3.5-turbo'
     const response = await openai.chat.completions.create({
-      model: process.env.LLM_MODEL || 'gpt-3.5-turbo',
+      model: model,
       messages: [
         {
           role: 'system',
