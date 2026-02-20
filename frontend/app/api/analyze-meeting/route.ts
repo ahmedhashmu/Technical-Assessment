@@ -17,6 +17,9 @@ export async function POST(request: NextRequest) {
       throw new Error('OPENAI_API_KEY not configured')
     }
 
+    // Use model from env var or fallback to gpt-4o-mini
+    const model = process.env.OPENAI_MODEL || 'gpt-4o-mini'
+
     const openai = new OpenAI({ apiKey })
 
     const prompt = `Analyze the following meeting transcript and extract structured information.
@@ -45,7 +48,7 @@ ${transcript}
 Respond only with valid JSON, no additional text.`
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: model,
       messages: [
         {
           role: 'system',
