@@ -1,5 +1,5 @@
 [phases.setup]
-aptPkgs = ["postgresql-client"]
+aptPkgs = ["postgresql-client", "ca-certificates", "curl"]
 
 [start]
 cmd = "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"

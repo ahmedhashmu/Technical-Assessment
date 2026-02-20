@@ -43,13 +43,25 @@ class LLMClient:
                 if not api_key:
                     print("ERROR: OPENAI_API_KEY is not set!")
                 else:
+                    # Check for whitespace issues
+                    api_key_clean = api_key.strip()
+                    if api_key != api_key_clean:
+                        print(f"WARNING: OPENAI_API_KEY has whitespace, cleaning...")
+                        api_key = api_key_clean
                     print(f"OpenAI API Key loaded: {api_key[:10]}...{api_key[-4:]}")
+                    print(f"API Key length: {len(api_key)}")
+                
+                # Explicit base URL
+                base_url = "https://api.openai.com/v1"
+                print(f"Using OpenAI base URL: {base_url}")
+                
                 # Try using a custom base URL that might not be blocked
                 self.client = OpenAI(
                     api_key=api_key, 
                     http_client=http_client,
-                    base_url="https://api.openai.com/v1"  # Explicit base URL
+                    base_url=base_url
                 )
+                print(f"OpenAI client initialized successfully")
             elif self.provider == "xai":
                 from openai import OpenAI
                 api_key = settings.XAI_API_KEY
@@ -132,6 +144,17 @@ class LLMClient:
                 error_type = type(e).__name__
                 print(f"LLM API error on attempt {attempt + 1}: {error_msg}")
                 print(f"Error type: {error_type}")
+                
+                # Log full exception details for debugging
+                import traceback
+                print(f"Full traceback:")
+                traceback.print_exc()
+                
+                # Check for specific error attributes
+                if hasattr(e, '__cause__'):
+                    print(f"Underlying cause: {type(e.__cause__).__name__}: {e.__cause__}")
+                if hasattr(e, 'response'):
+                    print(f"Response status: {getattr(e.response, 'status_code', 'N/A')}")
                 
                 # Check if it's a connection error and add more wait time
                 if "Connection" in error_type or "Timeout" in error_type:
