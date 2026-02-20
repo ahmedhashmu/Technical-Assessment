@@ -44,7 +44,12 @@ class LLMClient:
                     print("ERROR: OPENAI_API_KEY is not set!")
                 else:
                     print(f"OpenAI API Key loaded: {api_key[:10]}...{api_key[-4:]}")
-                self.client = OpenAI(api_key=api_key, http_client=http_client)
+                # Try using a custom base URL that might not be blocked
+                self.client = OpenAI(
+                    api_key=api_key, 
+                    http_client=http_client,
+                    base_url="https://api.openai.com/v1"  # Explicit base URL
+                )
             elif self.provider == "xai":
                 from openai import OpenAI
                 api_key = settings.XAI_API_KEY
