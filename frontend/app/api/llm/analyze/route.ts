@@ -20,7 +20,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Use model from env var or fallback to gpt-4o-mini
-    const model = process.env.OPENAI_MODEL || 'gpt-4o-mini'
+    let model = process.env.OPENAI_MODEL || 'gpt-4o-mini'
+    
+    // Debug logging to see what model is being used
+    console.log('OPENAI_MODEL env var:', process.env.OPENAI_MODEL)
+    console.log('Initial model:', model)
+    
+    // Validate model to prevent invalid model names
+    const validModels = ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo']
+    if (!validModels.includes(model)) {
+      console.error(`Invalid model "${model}", falling back to gpt-4o-mini`)
+      model = 'gpt-4o-mini'
+    }
+    console.log('Final model:', model)
 
     const openai = new OpenAI({ apiKey })
 

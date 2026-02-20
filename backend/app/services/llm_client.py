@@ -16,6 +16,13 @@ class LLMClient:
         self.provider = settings.LLM_PROVIDER
         self.model = settings.LLM_MODEL
         
+        # Validate and fix model name
+        valid_models = ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo", "grok-beta"]
+        print(f"Raw LLM_MODEL from settings: '{settings.LLM_MODEL}'")
+        if self.model not in valid_models:
+            print(f"WARNING: Invalid model '{self.model}', falling back to 'gpt-4o-mini'")
+            self.model = "gpt-4o-mini"
+        
         print(f"Initializing LLM Client - Provider: {self.provider}, Model: {self.model}")
         
         # Use frontend API proxy to bypass Railway network restrictions
