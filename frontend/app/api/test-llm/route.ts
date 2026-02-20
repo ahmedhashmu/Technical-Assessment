@@ -7,8 +7,10 @@ export async function GET(request: NextRequest) {
       apiKey: process.env.OPENAI_API_KEY,
     })
 
+    const model = process.env.OPENAI_MODEL || 'gpt-4o-mini'
+
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: model,
       messages: [
         { role: 'user', content: 'Say "LLM is working!"' }
       ],
@@ -18,7 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: response.choices[0].message.content,
-      model: 'gpt-3.5-turbo'
+      model: model
     })
   } catch (error: any) {
     return NextResponse.json({
